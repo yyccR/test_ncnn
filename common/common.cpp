@@ -303,8 +303,13 @@ void decode_mask(const ncnn::Mat& mask_feat, const int& img_w, const int& img_h,
                  ncnn::Mat& mask_pred_result){
     ncnn::Mat masks;
     matmul(std::vector<ncnn::Mat>{mask_feat, mask_proto}, masks);
+    std::cout << "--" << mask_feat.w << " " << mask_feat.h  << " " <<  mask_feat.c << std::endl;
+    std::cout << "--" << mask_proto.w << " " << mask_proto.h << " " <<  mask_proto.c << std::endl;
+    std::cout << "--" << masks.w << " " << masks.h << " " <<  masks.c << std::endl;
+
     sigmoid(masks);
     reshape(masks, masks, masks.h, in_pad.h / 4, in_pad.w / 4, 0);
+
     interp(masks, 4.0, 0, 0, masks);
     slice(masks, mask_pred_result, wpad / 2, in_pad.w - wpad / 2, 2);
     slice(mask_pred_result, mask_pred_result, hpad / 2, in_pad.h - hpad / 2, 1);

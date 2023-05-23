@@ -103,6 +103,9 @@ int detect(const cv::Mat& bgr, std::vector<Object>& objects) {
     ex.input(in_blob.c_str(), in_pad);
     ncnn::Mat out;
     ex.extract(out_blob.c_str(), out);
+    std::cout << out.elempack << std::endl;
+    std::cout << out.w << " " << out.h << " " <<  out.d << " " <<  out.c << std::endl;
+
     /*
     The out blob would be a 2-dim tensor with w=85 h=25200
 
@@ -129,6 +132,7 @@ int detect(const cv::Mat& bgr, std::vector<Object>& objects) {
 
     ncnn::Mat mask_proto;
     ex.extract(seg_blob.c_str(), mask_proto);
+    std::cout << mask_proto.w << " " << mask_proto.h << " " <<  mask_proto.d << " " <<  mask_proto.c << std::endl;
 
     std::vector<Object> proposals;
 
@@ -196,6 +200,7 @@ int detect(const cv::Mat& bgr, std::vector<Object>& objects) {
 
     ncnn::Mat mask_pred_result;
     decode_mask(mask_feat, img_w, img_h, mask_proto, in_pad, wpad, hpad, mask_pred_result);
+
 
     objects.resize(count);
     for (int i = 0; i < count; i++)
@@ -500,18 +505,22 @@ void draw_objects(cv::Mat& bgr, const std::vector<Object>& objects, int mode) {
 
 
 void test_yolov5_seg_ncnn() {
-    std::string image_file("/Users/yang/CLionProjects/test_ncnn2/data/dog.jpg");
-    std::string param_file("/Users/yang/CLionProjects/test_ncnn/yolov5-seg/yolov5n-seg.ncnn.param");
-    std::string bin_file("/Users/yang/CLionProjects/test_ncnn/yolov5-seg/yolov5n-seg.ncnn.bin");
+    std::string image_file("/Users/yang/CLionProjects/test_ncnn2/data/bus.jpeg");
+    std::string param_file("/Users/yang/CLionProjects/test_ncnn2/yolov5-seg/yolov5n-seg.ncnn.param");
+    std::string bin_file("/Users/yang/CLionProjects/test_ncnn2/yolov5-seg/yolov5n-seg.ncnn.bin");
 
-    load(bin_file, param_file);
-    cv::Mat image = cv::imread(image_file);
+    int res = load(bin_file, param_file);
+    std::cout << "init res: " << res << std::endl;
+    cv::Mat image = cv::imread(image_file, 1);
     get_blob_name("in0","out0","out1","out2","out3","out1");
     std::vector<Object> objects;
     detect(image, objects);
+//    for(auto i : objects){
+//        std::cout << i.rect.x << " " << i.rect.y << " " << class_names[i.label] << " " << i.prob << std::endl;
+//    }
+    draw_objects(image, objects, 1);
 
     cv::imshow("a", image);
     cv::waitKey(0);
-
-    std::cout << "test ncnn" << std::endl;
+//    std::cout << "test ncnn" << std::endl;
 }
