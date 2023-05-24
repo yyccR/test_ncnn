@@ -2,5 +2,5 @@
 
 ### yolov5-segment (pnnx)
 
-[](/data/dog-seg.jpg)
+![dog](/data/dog-seg.jpg)
 
