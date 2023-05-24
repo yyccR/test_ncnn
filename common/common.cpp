@@ -292,7 +292,6 @@ void matmul(const std::vector<ncnn::Mat>& bottom_blobs, ncnn::Mat& top_blob) {
     std::vector<ncnn::Mat> top_blobs(1);
     op->forward(bottom_blobs, top_blobs, opt);
     top_blob = top_blobs[0];
-
     op->destroy_pipeline(opt);
 
     delete op;
@@ -302,15 +301,22 @@ void decode_mask(const ncnn::Mat& mask_feat, const int& img_w, const int& img_h,
                  const ncnn::Mat& mask_proto, const ncnn::Mat& in_pad, const int& wpad, const int& hpad,
                  ncnn::Mat& mask_pred_result){
     ncnn::Mat masks;
-    matmul(std::vector<ncnn::Mat>{mask_feat, mask_proto}, masks);
-    std::cout << "--" << mask_feat.w << " " << mask_feat.h  << " " <<  mask_feat.c << std::endl;
-    std::cout << "--" << mask_proto.w << " " << mask_proto.h << " " <<  mask_proto.c << std::endl;
-    std::cout << "--" << masks.w << " " << masks.h << " " <<  masks.c << std::endl;
+    ncnn::Mat reshape_proto = mask_proto.reshape(mask_proto.w*mask_proto.h,mask_proto.c);
+
+    matmul(std::vector<ncnn::Mat>{mask_feat, reshape_proto}, masks);
+//    std::cout << "--" << reshape_proto.w << " " << reshape_proto.h  << " " <<  reshape_proto.d  << " " <<reshape_proto.c << std::endl;
+//    std::cout << "--" << mask_feat.w << " " << mask_feat.h  << " " <<  mask_feat.d  << " " <<mask_feat.c << std::endl;
+//    std::cout << "--" << mask_proto.w << " " << mask_proto.h << " " << mask_proto.d << " " <<  mask_proto.c << std::endl;
+//    std::cout << "matmul:" << masks.w << " " << masks.h << " " << masks.d << " " <<   masks.c << std::endl;
 
     sigmoid(masks);
-    reshape(masks, masks, masks.h, in_pad.h / 4, in_pad.w / 4, 0);
 
+//    std::cout << "sigmoid:" << masks.w << " " << masks.h << " " <<  masks.d << " " <<   masks.c << std::endl;
+    reshape(masks, masks, masks.h, in_pad.h / 4, in_pad.w / 4, 0);
+//    std::cout << "reshape:" << masks.w << " " << masks.h << " " <<  masks.d << " " <<   masks.c << std::endl;
+//    std::cout << "reshape:" << masks.h << " " << in_pad.h << " " <<  masks.d << " " <<   in_pad.w << std::endl;
     interp(masks, 4.0, 0, 0, masks);
+//    std::cout << "interp:" << masks.w << " " << masks.h << " " <<  masks.d << " " <<   masks.c << std::endl;
     slice(masks, mask_pred_result, wpad / 2, in_pad.w - wpad / 2, 2);
     slice(mask_pred_result, mask_pred_result, hpad / 2, in_pad.h - hpad / 2, 1);
     interp(mask_pred_result, 1.0, img_w, img_h, mask_pred_result);

@@ -505,9 +505,9 @@ void draw_objects(cv::Mat& bgr, const std::vector<Object>& objects, int mode) {
 
 
 void test_yolov5_seg_ncnn() {
-    std::string image_file("/Users/yang/CLionProjects/test_ncnn2/data/bus.jpeg");
-    std::string param_file("/Users/yang/CLionProjects/test_ncnn2/yolov5-seg/yolov5n-seg.ncnn.param");
-    std::string bin_file("/Users/yang/CLionProjects/test_ncnn2/yolov5-seg/yolov5n-seg.ncnn.bin");
+    std::string image_file("/Users/yang/CLionProjects/test_ncnn2/data/dog.jpg");
+    std::string param_file("/Users/yang/CLionProjects/test_ncnn2/yolov5-seg/yolov5s-seg.ncnn.param");
+    std::string bin_file("/Users/yang/CLionProjects/test_ncnn2/yolov5-seg/yolov5s-seg.ncnn.bin");
 
     int res = load(bin_file, param_file);
     std::cout << "init res: " << res << std::endl;
@@ -522,5 +522,7 @@ void test_yolov5_seg_ncnn() {
 
     cv::imshow("a", image);
     cv::waitKey(0);
+
+
 //    std::cout << "test ncnn" << std::endl;
 }
