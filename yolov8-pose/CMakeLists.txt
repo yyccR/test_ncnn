@@ -1,0 +1,7 @@
+aux_source_directory(. yolov8_pose)
+#set(OpenCV_DIR ${CMAKE_SOURCE_DIR}/../libs/opencv-mobile-4.5.4-android/sdk/native/jni)
+find_package(OpenCV REQUIRED core imgproc highgui)
+find_package(ncnn REQUIRED)
+add_library(yolov8_pose_lib ${yolov8_pose})
+target_link_libraries(yolov8_pose_lib ${OpenCV_LIBS})
+target_link_libraries(yolov8_pose_lib ncnn)
