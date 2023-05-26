@@ -520,9 +520,9 @@ void test_yolov5_seg_ncnn() {
 //    }
     draw_objects(image, objects, 1);
 
-//    cv::imshow("a", image);
-//    cv::waitKey(0);
+    cv::imshow("a", image);
+    cv::waitKey(0);
 
-    cv::imwrite("../data/bus-seg.jpeg", image);
+//    cv::imwrite("../data/bus-seg.jpeg", image);
 //    std::cout << "test ncnn" << std::endl;
 }

@@ -87,6 +87,7 @@ int detect(const cv::Mat& bgr, std::vector<Object>& objects) {
 
     // construct ncnn::Mat from image pixel data, swap order from bgr to rgb
     ncnn::Mat in = ncnn::Mat::from_pixels_resize(bgr.data, ncnn::Mat::PIXEL_BGR2RGB, img_w, img_h, w, h);
+    std::cout << "in: " << in.w << " " << in.h << " " <<  in.d << " " <<  in.c << " " << scale << " " << std::endl;
 
     // pad to target_size rectangle
     const int wpad = target_size - w;
@@ -103,62 +104,70 @@ int detect(const cv::Mat& bgr, std::vector<Object>& objects) {
     ex.input(yolov8_seg_ncnn_in_blob.c_str(), in_pad);
     ncnn::Mat out;
     ex.extract(yolov8_seg_ncnn_out_blob.c_str(), out);
+    std::cout << "in_pad: " << in_pad.w << " " << in_pad.h << " " <<  in_pad.d << " " <<  in_pad.c << std::endl;
+    std::cout << "out: " << out.w << " " << out.h << " " <<  out.d << " " <<  out.c << std::endl;
 
     /*
-    The out blob would be a 2-dim tensor with w=85 h=25200
+    The out blob would be a 2-dim tensor with w=84 h=25200
 
-           |cx|cy|bw|bh|box score(1)| per-class scores(80) |
-           +--+--+--+--+------------+----------------------+
-           |53|50|70|80|    0.11    |0.1 0.0 0.0 0.5 ......|
-      all /|  |  |  |  |      .     |           .          |
-     boxes |46|40|38|44|    0.95    |0.0 0.9 0.0 0.0 ......|
-    (25200)|  |  |  |  |      .     |           .          |
-          \|  |  |  |  |      .     |           .          |
-           +--+--+--+--+------------+----------------------+
+           |cx|cy|bw|bh| per-class scores(80) |
+           +--+--+--+--+----------------------+
+           |53|50|70|80|0.1 0.0 0.0 0.5 ......|
+      all /|  |  |  |  |           .          |
+     boxes |46|40|38|44|0.0 0.9 0.0 0.0 ......|
+    (8400)|  |  |  |  |           .          |
+          \|  |  |  |  |           .          |
+           +--+--+--+--+----------------------+
 
     The out blob would be a 2-dim tensor with w=117 h=25200 (for segment model)
 
-           |cx|cy|bw|bh|box score(1)| per-class scores(80) |mask feature(32)|
-           +--+--+--+--+------------+----------------------+----------------+
-           |53|50|70|80|    0.11    |0.1 0.0 0.0 0.5 ......|                |
-      all /|  |  |  |  |      .     |           .          |                |
-     boxes |46|40|38|44|    0.95    |0.0 0.9 0.0 0.0 ......|                |
-    (25200)|  |  |  |  |      .     |           .          |                |
-          \|  |  |  |  |      .     |           .          |                |
-           +--+--+--+--+------------+----------------------+----------------|
+           |cx|cy|bw|bh|per-class scores(80) |mask feature(32)|
+           +--+--+--+--+----------------------+----------------+
+           |53|50|70|80|0.1 0.0 0.0 0.5 ......|                |
+      all /|  |  |  |  |           .          |                |
+     boxes |46|40|38|44|0.0 0.9 0.0 0.0 ......|                |
+    (8400)|  |  |  |  |           .          |                |
+          \|  |  |  |  |           .          |                |
+           +--+--+--+--+----------------------+----------------|
     */
 
     ncnn::Mat mask_proto;
     ex.extract(yolov8_seg_ncnn_seg_blob.c_str(), mask_proto);
-    std::cout << mask_proto.w << " " << mask_proto.h << " " <<  mask_proto.d << " " <<  mask_proto.c << std::endl;
+    std::cout << "mask_proto: " << mask_proto.w << " " << mask_proto.h << " " <<  mask_proto.d << " " <<  mask_proto.c << std::endl;
+    ncnn::Mat t_out;
+    transpose(out, t_out);
 
     std::vector<Object> proposals;
-
-    const int num_grid = out.h;
-    const int num_class = out.w - 5 - 32;
+    const int num_grid = t_out.h;
+    const int num_class = t_out.w - 4 - 32;
     for (int i = 0; i < num_grid; i++) {
-        const float box_score = out.row(i)[4];
 
         // find class index with max class score
         int class_index = 0;
         float class_score = -FLT_MAX;
         for (int k = 0; k < num_class; k++) {
-            float score = out.row(i)[5 + k];
+            float score = t_out.row(i)[4 + k];
             if (score > class_score) {
                 class_index = k;
                 class_score = score;
             }
         }
-
         // combined score = box score * class score
-        float score = box_score * class_score;
+        float score = class_score;
 
         // filter candidate boxes with combined score >= prob_threshold
         if (score >= prob_threshold) {
-            const float cx = out.row(i)[0]; //center x coordinate
-            const float cy = out.row(i)[1]; //center y coordinate
-            const float bw = out.row(i)[2]; //box width
-            const float bh = out.row(i)[3]; //box height
+            float stride_scale = 1.0;
+            if(i >= 6400 && i < 8000){
+                stride_scale = 2.0;
+            } else if (i >= 8000){
+                stride_scale = 4.0;
+            }
+
+            const float cx = t_out.row(i)[0] * stride_scale; //center x coordinate
+            const float cy = t_out.row(i)[1] * stride_scale; //center y coordinate
+            const float bw = t_out.row(i)[2] * stride_scale; //box width
+            const float bh = t_out.row(i)[3] * stride_scale; //box height
 
             // transform candidate box (center-x,center-y,w,h) to (x0,y0,x1,y1)
             float x0 = cx - bw * 0.5f;
@@ -166,6 +175,7 @@ int detect(const cv::Mat& bgr, std::vector<Object>& objects) {
             float x1 = cx + bw * 0.5f;
             float y1 = cy + bh * 0.5f;
 
+//            std::cout << i << " " << x0 << " " << y0 << " " << x1 << " " << y1 << std::endl;
             // collect candidates
             Object obj;
             obj.rect.x = x0;
@@ -175,11 +185,11 @@ int detect(const cv::Mat& bgr, std::vector<Object>& objects) {
             obj.label = class_index;
             obj.prob = score;
             obj.mask_feat.resize(32);
-            std::copy(out.row(i) + 5 + num_class, out.row(i) + 5 + num_class + 32, obj.mask_feat.begin());
-
-            proposals.push_back(obj);
+            std::copy(t_out.row(i) + 4 + num_class, t_out.row(i) + 4 + num_class + 32, obj.mask_feat.begin());
+                proposals.push_back(obj);
         }
     }
+
 
     // sort all candidates by score from highest to lowest
     qsort_descent_inplace(proposals);
@@ -198,7 +208,6 @@ int detect(const cv::Mat& bgr, std::vector<Object>& objects) {
 
     ncnn::Mat mask_pred_result;
     decode_mask(mask_feat, img_w, img_h, mask_proto, in_pad, wpad, hpad, mask_pred_result);
-
 
     objects.resize(count);
     for (int i = 0; i < count; i++)
@@ -503,36 +512,38 @@ void draw_objects(cv::Mat& bgr, const std::vector<Object>& objects, int mode) {
 
 
 void test_yolov8_seg_ncnn() {
-    std::string image_file("/Users/yang/CLionProjects/test_ncnn2/data/dog.jpg");
-    std::string param_file("/Users/yang/CLionProjects/test_ncnn2/yolov8/yolov8n.ncnn.param");
-    std::string bin_file("/Users/yang/CLionProjects/test_ncnn2/yolov8/yolov8n.ncnn.bin");
+    std::string image_file("/Users/yang/CLionProjects/test_ncnn2/data/traffic_road.jpg");
+    std::string param_file("/Users/yang/CLionProjects/test_ncnn2/yolov8-seg/yolov8n-seg.ncnn.param");
+    std::string bin_file("/Users/yang/CLionProjects/test_ncnn2/yolov8-seg/yolov8n-seg.ncnn.bin");
 
     int res = load(bin_file, param_file);
     std::cout << "init res: " << res << std::endl;
     cv::Mat image = cv::imread(image_file, 1);
-    ncnn::Mat input = ncnn::Mat::from_pixels_resize(image.data, ncnn::Mat::PIXEL_BGR2RGB, image.cols, image.rows, 640, 640);
-    ncnn::Extractor ex = yolov8_seg_ncnn_net.create_extractor();
-    ex.input("in0", input);
-    for(auto &in_name : yolov8_seg_ncnn_net.input_names()) {
-        ncnn::Mat in;
-        ex.extract(in_name, in);
-        std::cout << in_name << ": " << in.w << " " << in.h << " " << in.d << " " << in.c << std::endl;
-
-    }
-    for(auto &out_name : yolov8_seg_ncnn_net.output_names()) {
-        ncnn::Mat out;
-        ex.extract(out_name, out);
-        std::cout << out_name << ": " << out.w << " " << out.h << " " << out.d << " " << out.c << std::endl;
-
-    }
-
-//    get_blob_name("in0","out0","out1","out2","out3","out1");
-//    std::vector<Object> objects;
-//    detect(image, objects);
-//    draw_objects(image, objects, 1);
+//    ncnn::Mat input = ncnn::Mat::from_pixels_resize(image.data, ncnn::Mat::PIXEL_BGR2RGB, image.cols, image.rows, 640, 640);
+//    ncnn::Extractor ex = yolov8_seg_ncnn_net.create_extractor();
+//    ex.input("in0", input);
+//    for(auto &in_name : yolov8_seg_ncnn_net.input_names()) {
+//        ncnn::Mat in;
+//        ex.extract(in_name, in);
+//        std::cout << in_name << ": " << in.w << " " << in.h << " " << in.d << " " << in.c << std::endl;
 //
+//    }
+//    for(auto &out_name : yolov8_seg_ncnn_net.output_names()) {
+//        ncnn::Mat out;
+//        ex.extract(out_name, out);
+//        std::cout << out_name << ": " << out.w << " " << out.h << " " << out.d << " " << out.c << std::endl;
+//
+//    }
+
+    get_blob_name("in0","out0","out1","out2","out3","out1");
+    std::vector<Object> objects;
+    detect(image, objects);
+    draw_objects(image, objects, 1);
+
 //    cv::imshow("a", image);
 //    cv::waitKey(0);
+    cv::imwrite("../data/traffic_road_seg_v8.jpg", image);
+
 
 
 }

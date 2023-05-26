@@ -171,6 +171,23 @@ void matVisualize(const char* title, const ncnn::Mat& m, bool save) {
     }
 }
 
+void transpose(const ncnn::Mat& in, ncnn::Mat& out)
+{
+    ncnn::Option opt;
+    ncnn::Layer* op = ncnn::create_layer("Permute");
+
+    // set param
+    ncnn::ParamDict pd;
+    pd.set(0, 1);// order_type
+
+    op->load_param(pd);
+    op->create_pipeline(opt);
+    // forward
+    op->forward(in, out, opt);
+    op->destroy_pipeline(opt);
+    delete op;
+}
+
 void slice(const ncnn::Mat& in, ncnn::Mat& out, int start, int end, int axis) {
     ncnn::Option opt;
     opt.num_threads = 4;

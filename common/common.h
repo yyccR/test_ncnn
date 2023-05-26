@@ -28,6 +28,8 @@ extern const unsigned char colors[81][3];
 
 void draw_segment(cv::Mat& bgr, cv::Mat mask, const unsigned char* color);
 
+void transpose(const ncnn::Mat& in, ncnn::Mat& out);
+
 void matPrint(const ncnn::Mat& m);
 
 void matVisualize(const char* title, const ncnn::Mat& m, bool save = 0);
