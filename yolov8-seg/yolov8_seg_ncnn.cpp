@@ -639,8 +639,8 @@ void draw_objects(cv::Mat& bgr, const std::vector<Object>& objects, int mode) {
 
 void test_yolov8_seg_ncnn() {
     std::string image_file("/Users/yang/CLionProjects/test_ncnn2/data/traffic_road.jpg");
-    std::string param_file("/Users/yang/CLionProjects/test_ncnn2/yolov8n-seg.ncnn.param");
-    std::string bin_file("/Users/yang/CLionProjects/test_ncnn2/yolov8n-seg.ncnn.bin");
+    std::string param_file("/Users/yang/CLionProjects/test_ncnn2/yolov8-seg/yolov8n-seg.ncnn.param");
+    std::string bin_file("/Users/yang/CLionProjects/test_ncnn2/yolov8-seg/yolov8n-seg.ncnn.bin");
 
     int res = load(bin_file, param_file);
     std::cout << "init res: " << res << std::endl;
