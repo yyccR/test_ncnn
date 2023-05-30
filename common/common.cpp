@@ -321,10 +321,10 @@ void decode_mask(const ncnn::Mat& mask_feat, const int& img_w, const int& img_h,
     ncnn::Mat reshape_proto = mask_proto.reshape(mask_proto.w*mask_proto.h,mask_proto.c);
 
     matmul(std::vector<ncnn::Mat>{mask_feat, reshape_proto}, masks);
-//    std::cout << "--" << reshape_proto.w << " " << reshape_proto.h  << " " <<  reshape_proto.d  << " " <<reshape_proto.c << std::endl;
-//    std::cout << "--" << mask_feat.w << " " << mask_feat.h  << " " <<  mask_feat.d  << " " <<mask_feat.c << std::endl;
-//    std::cout << "--" << mask_proto.w << " " << mask_proto.h << " " << mask_proto.d << " " <<  mask_proto.c << std::endl;
-//    std::cout << "matmul:" << masks.w << " " << masks.h << " " << masks.d << " " <<   masks.c << std::endl;
+    std::cout << "--" << reshape_proto.w << " " << reshape_proto.h  << " " <<  reshape_proto.d  << " " <<reshape_proto.c << std::endl;
+    std::cout << "--" << mask_feat.w << " " << mask_feat.h  << " " <<  mask_feat.d  << " " <<mask_feat.c << std::endl;
+    std::cout << "--" << mask_proto.w << " " << mask_proto.h << " " << mask_proto.d << " " <<  mask_proto.c << std::endl;
+    std::cout << "matmul:" << masks.w << " " << masks.h << " " << masks.d << " " <<   masks.c << std::endl;
 
     sigmoid(masks);
 
