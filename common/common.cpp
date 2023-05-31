@@ -102,6 +102,72 @@ void draw_segment(cv::Mat& bgr, cv::Mat mask, const unsigned char* color) {
     }
 }
 
+void draw_pose(cv::Mat& bgr, std::vector<cv::Point3f> key_points){
+    for(auto& kp: key_points){
+        if(kp.z > 0.5){
+            cv::circle(bgr, cv::Point(kp.x,kp.y), 4, cv::Scalar(0, 0, 255), -1); // 红色实心圆
+        }
+    }
+    cv::Point neck((key_points[5].x + key_points[6].x)/2.0, (key_points[5].y + key_points[6].y)/2.0);
+
+    if(key_points[0].z > 0.5 && key_points[1].z > 0.5){
+        cv::line(bgr, cv::Point(key_points[0].x, key_points[0].y), cv::Point(key_points[1].x, key_points[1].y), cv::Scalar(127,255,0), 2);
+    }
+    if(key_points[0].z > 0.5 && key_points[2].z > 0.5){
+        cv::line(bgr, cv::Point(key_points[0].x, key_points[0].y), cv::Point(key_points[2].x, key_points[2].y), cv::Scalar(127,255,0), 2);
+    }
+    if(key_points[1].z > 0.5 && key_points[3].z > 0.5){
+        cv::line(bgr, cv::Point(key_points[1].x, key_points[1].y), cv::Point(key_points[3].x, key_points[3].y), cv::Scalar(127,255,0), 2);
+    }
+    if(key_points[2].z > 0.5 && key_points[4].z > 0.5){
+        cv::line(bgr, cv::Point(key_points[2].x, key_points[2].y), cv::Point(key_points[4].x, key_points[4].y), cv::Scalar(127,255,0), 2);
+    }
+    if(key_points[2].z > 0.5 && key_points[4].z > 0.5){
+        cv::line(bgr, cv::Point(key_points[2].x, key_points[2].y), cv::Point(key_points[4].x, key_points[4].y), cv::Scalar(127,255,0), 2);
+    }
+    if(key_points[5].z > 0.5 && key_points[6].z > 0.5){
+
+        cv::line(bgr, cv::Point(key_points[0].x, key_points[0].y), neck, cv::Scalar(127,255,0), 2);
+        cv::line(bgr, neck, cv::Point(key_points[5].x, key_points[5].y), cv::Scalar(127,255,0), 2);
+        cv::line(bgr, neck, cv::Point(key_points[6].x, key_points[6].y), cv::Scalar(127,255,0), 2);
+
+        if(key_points[11].z > 0.5){
+            cv::line(bgr, neck, cv::Point(key_points[11].x, key_points[11].y), cv::Scalar(127,255,0), 2);
+        }
+        if(key_points[12].z > 0.5){
+            cv::line(bgr, neck, cv::Point(key_points[12].x, key_points[12].y), cv::Scalar(127,255,0), 2);
+        }
+    }
+
+    if(key_points[5].z > 0.5 && key_points[7].z > 0.5){
+        cv::line(bgr, cv::Point(key_points[5].x, key_points[5].y), cv::Point(key_points[7].x, key_points[7].y), cv::Scalar(127,255,0), 2);
+    }
+    if(key_points[7].z > 0.5 && key_points[9].z > 0.5){
+        cv::line(bgr, cv::Point(key_points[7].x, key_points[7].y), cv::Point(key_points[9].x, key_points[9].y), cv::Scalar(127,255,0), 2);
+    }
+    if(key_points[6].z > 0.5 && key_points[8].z > 0.5){
+        cv::line(bgr, cv::Point(key_points[6].x, key_points[6].y), cv::Point(key_points[8].x, key_points[8].y), cv::Scalar(127,255,0), 2);
+    }
+    if(key_points[8].z > 0.5 && key_points[10].z > 0.5){
+        cv::line(bgr, cv::Point(key_points[8].x, key_points[8].y), cv::Point(key_points[10].x, key_points[10].y), cv::Scalar(127,255,0), 2);
+    }
+    if(key_points[8].z > 0.5 && key_points[10].z > 0.5){
+        cv::line(bgr, cv::Point(key_points[8].x, key_points[8].y), cv::Point(key_points[10].x, key_points[10].y), cv::Scalar(127,255,0), 2);
+    }
+    if(key_points[11].z > 0.5 && key_points[13].z > 0.5){
+        cv::line(bgr, cv::Point(key_points[11].x, key_points[11].y), cv::Point(key_points[13].x, key_points[13].y), cv::Scalar(127,255,0), 2);
+    }
+    if(key_points[13].z > 0.5 && key_points[15].z > 0.5){
+        cv::line(bgr, cv::Point(key_points[13].x, key_points[13].y), cv::Point(key_points[15].x, key_points[15].y), cv::Scalar(127,255,0), 2);
+    }
+    if(key_points[12].z > 0.5 && key_points[14].z > 0.5){
+        cv::line(bgr, cv::Point(key_points[12].x, key_points[12].y), cv::Point(key_points[14].x, key_points[14].y), cv::Scalar(127,255,0), 2);
+    }
+    if(key_points[14].z > 0.5 && key_points[16].z > 0.5){
+        cv::line(bgr, cv::Point(key_points[14].x, key_points[14].y), cv::Point(key_points[16].x, key_points[16].y), cv::Scalar(127,255,0), 2);
+    }
+}
+
 void matPrint(const ncnn::Mat& m){
     for (int q = 0; q < m.c; q++){
         const float* ptr = m.channel(q);
@@ -187,6 +253,28 @@ void transpose(const ncnn::Mat& in, ncnn::Mat& out)
     op->destroy_pipeline(opt);
     delete op;
 }
+
+void softmax(ncnn::Mat& bottom) {
+
+    ncnn::Layer* sfm = ncnn::create_layer("Softmax");
+
+    ncnn::ParamDict pd;
+    pd.set(0, 1); // axis
+    pd.set(1, 1);
+    sfm->load_param(pd);
+
+    ncnn::Option opt;
+    opt.num_threads = 1;
+    opt.use_packing_layout = false;
+
+    sfm->create_pipeline(opt);
+    sfm->forward_inplace(bottom, opt);
+
+    sfm->destroy_pipeline(opt);
+
+    delete sfm;
+}
+
 
 void slice(const ncnn::Mat& in, ncnn::Mat& out, int start, int end, int axis) {
     ncnn::Option opt;
@@ -285,7 +373,6 @@ void sigmoid(ncnn::Mat& bottom) {
     op->create_pipeline(opt);
 
     // forward
-
     op->forward_inplace(bottom, opt);
     op->destroy_pipeline(opt);
 
@@ -321,10 +408,10 @@ void decode_mask(const ncnn::Mat& mask_feat, const int& img_w, const int& img_h,
     ncnn::Mat reshape_proto = mask_proto.reshape(mask_proto.w*mask_proto.h,mask_proto.c);
 
     matmul(std::vector<ncnn::Mat>{mask_feat, reshape_proto}, masks);
-    std::cout << "--" << reshape_proto.w << " " << reshape_proto.h  << " " <<  reshape_proto.d  << " " <<reshape_proto.c << std::endl;
-    std::cout << "--" << mask_feat.w << " " << mask_feat.h  << " " <<  mask_feat.d  << " " <<mask_feat.c << std::endl;
-    std::cout << "--" << mask_proto.w << " " << mask_proto.h << " " << mask_proto.d << " " <<  mask_proto.c << std::endl;
-    std::cout << "matmul:" << masks.w << " " << masks.h << " " << masks.d << " " <<   masks.c << std::endl;
+//    std::cout << "--" << reshape_proto.w << " " << reshape_proto.h  << " " <<  reshape_proto.d  << " " <<reshape_proto.c << std::endl;
+//    std::cout << "--" << mask_feat.w << " " << mask_feat.h  << " " <<  mask_feat.d  << " " <<mask_feat.c << std::endl;
+//    std::cout << "--" << mask_proto.w << " " << mask_proto.h << " " << mask_proto.d << " " <<  mask_proto.c << std::endl;
+//    std::cout << "matmul:" << masks.w << " " << masks.h << " " << masks.d << " " <<   masks.c << std::endl;
 
     sigmoid(masks);
 

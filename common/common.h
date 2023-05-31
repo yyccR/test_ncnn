@@ -11,7 +11,9 @@
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 
+#include <vector>
 #include <iostream>
+
 
 #define MAX_STRIDE 64
 #define PERMUTE 0
@@ -22,17 +24,22 @@ struct Object {
     float prob{};
     std::vector<float> mask_feat;
     cv::Mat cv_mask;
+    std::vector<cv::Point3f> key_points;
 };
 
 extern const unsigned char colors[81][3];
 
 void draw_segment(cv::Mat& bgr, cv::Mat mask, const unsigned char* color);
 
+void draw_pose(cv::Mat& bgr, std::vector<cv::Point3f> key_points);
+
 void transpose(const ncnn::Mat& in, ncnn::Mat& out);
 
 void matPrint(const ncnn::Mat& m);
 
 void matVisualize(const char* title, const ncnn::Mat& m, bool save = 0);
+
+void softmax(ncnn::Mat& bottom);
 
 void slice(const ncnn::Mat& in, ncnn::Mat& out, int start, int end, int axis);
 
@@ -47,6 +54,7 @@ void matmul(const std::vector<ncnn::Mat>& bottom_blobs, ncnn::Mat& top_blob);
 void decode_mask(const ncnn::Mat& mask_feat, const int& img_w, const int& img_h,
                  const ncnn::Mat& mask_proto, const ncnn::Mat& in_pad, const int& wpad, const int& hpad,
                  ncnn::Mat& mask_pred_result);
+
 
 inline float intersection_area(const Object& a, const Object& b);
 
