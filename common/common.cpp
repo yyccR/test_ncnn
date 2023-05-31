@@ -103,11 +103,7 @@ void draw_segment(cv::Mat& bgr, cv::Mat mask, const unsigned char* color) {
 }
 
 void draw_pose(cv::Mat& bgr, std::vector<cv::Point3f> key_points){
-    for(auto& kp: key_points){
-        if(kp.z > 0.5){
-            cv::circle(bgr, cv::Point(kp.x,kp.y), 4, cv::Scalar(0, 0, 255), -1); // 红色实心圆
-        }
-    }
+
     cv::Point neck((key_points[5].x + key_points[6].x)/2.0, (key_points[5].y + key_points[6].y)/2.0);
 
     if(key_points[0].z > 0.5 && key_points[1].z > 0.5){
@@ -165,6 +161,12 @@ void draw_pose(cv::Mat& bgr, std::vector<cv::Point3f> key_points){
     }
     if(key_points[14].z > 0.5 && key_points[16].z > 0.5){
         cv::line(bgr, cv::Point(key_points[14].x, key_points[14].y), cv::Point(key_points[16].x, key_points[16].y), cv::Scalar(127,255,0), 2);
+    }
+
+    for(auto& kp: key_points){
+        if(kp.z > 0.5){
+            cv::circle(bgr, cv::Point(kp.x,kp.y), 3, cv::Scalar(0, 0, 255), -1); // 红色实心圆
+        }
     }
 }
 

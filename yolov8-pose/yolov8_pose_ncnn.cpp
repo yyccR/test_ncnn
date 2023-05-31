@@ -599,7 +599,7 @@ void draw_objects(cv::Mat& bgr, const std::vector<Object>& objects, int mode) {
 
 
 void test_yolov8_pose_ncnn() {
-    std::string image_file("/Users/yang/CLionProjects/test_ncnn2/data/bus.jpeg");
+    std::string image_file("/Users/yang/CLionProjects/test_ncnn2/data/coco128_625.jpg");
     std::string param_file("/Users/yang/CLionProjects/test_ncnn2/yolov8-pose/yolov8n-pose.ncnn.param");
     std::string bin_file("/Users/yang/CLionProjects/test_ncnn2/yolov8-pose/yolov8n-pose.ncnn.bin");
 
@@ -629,7 +629,7 @@ void test_yolov8_pose_ncnn() {
 
 //    cv::imshow("a", image);
 //    cv::waitKey(0);
-    cv::imwrite("../data/bus-pose.jpeg", image);
+    cv::imwrite("../data/coco128_625-pose.jpg", image);
 
 
 
