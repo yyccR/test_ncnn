@@ -1,0 +1,7 @@
+aux_source_directory(. yolov5_nas)
+#set(OpenCV_DIR ${CMAKE_SOURCE_DIR}/../libs/opencv-mobile-4.5.4-android/sdk/native/jni)
+find_package(OpenCV REQUIRED core imgproc highgui)
+find_package(ncnn REQUIRED)
+add_library(yolov5_nas_lib ${yolov5_nas})
+target_link_libraries(yolov5_nas_lib ${OpenCV_LIBS})
+target_link_libraries(yolov5_nas_lib ncnn)
