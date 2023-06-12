@@ -215,30 +215,6 @@ int detect(const cv::Mat& bgr, std::vector<Object>& objects) {
     std::cout << "in_pad: " << in_pad.w << " " << in_pad.h << " " <<  in_pad.d << " " <<  in_pad.c << std::endl;
     std::cout << "out: " << out.w << " " << out.h << " " <<  out.d << " " <<  out.c << std::endl;
 
-    /*
-    The out blob would be a 2-dim tensor with w=84 h=25200
-
-           |cx|cy|bw|bh| per-class scores(80) |
-           +--+--+--+--+----------------------+
-           |53|50|70|80|0.1 0.0 0.0 0.5 ......|
-      all /|  |  |  |  |           .          |
-     boxes |46|40|38|44|0.0 0.9 0.0 0.0 ......|
-    (8400)|  |  |  |  |           .          |
-          \|  |  |  |  |           .          |
-           +--+--+--+--+----------------------+
-
-    The out blob would be a 2-dim tensor with w=117 h=25200 (for segment model)
-
-           |cx|cy|bw|bh|per-class scores(80) |mask feature(32)|
-           +--+--+--+--+----------------------+----------------+
-           |53|50|70|80|0.1 0.0 0.0 0.5 ......|                |
-      all /|  |  |  |  |           .          |                |
-     boxes |46|40|38|44|0.0 0.9 0.0 0.0 ......|                |
-    (8400)|  |  |  |  |           .          |                |
-          \|  |  |  |  |           .          |                |
-           +--+--+--+--+----------------------+----------------|
-    */
-
 //    ncnn::Mat mask_proto;
 //    ex.extract(yolo_nas_seg_ncnn_seg_blob.c_str(), mask_proto);
 //    std::cout << "mask_proto: " << mask_proto.w << " " << mask_proto.h << " " <<  mask_proto.d << " " <<  mask_proto.c << std::endl;
@@ -260,58 +236,58 @@ int detect(const cv::Mat& bgr, std::vector<Object>& objects) {
 
 
 //    std::vector<Object> proposals;
-//    const int num_grid = out.h;
-//    const int num_class = out.w - 4 - 32;
-//    for (int i = 0; i < num_grid; i++) {
-//
-//        // find class index with max class score
-//        int class_index = 0;
-//        float class_score = -FLT_MAX;
-//        for (int k = 0; k < num_class; k++) {
-//            float score = out.row(i)[4 + k];
-//            if (score > class_score) {
-//                class_index = k;
-//                class_score = score;
-//            }
-//        }
-//        // combined score = box score * class score
-//        float score = class_score;
-//
-//        // filter candidate boxes with combined score >= prob_threshold
-//        if (score >= prob_threshold) {
-//            std::cout << i << " " << score << " " << out.row(i)[0] << " " << out.row(i)[1] << " " << std::endl;
-//
-//            float stride_scale = 1.0;
-//            if(i >= 6400 && i < 8000){
-//                stride_scale = 2.0;
-//            } else if (i >= 8000){
-//                stride_scale = 4.0;
-//            }
-//
-//            const float cx = out.row(i)[0] * stride_scale; //center x coordinate
-//            const float cy = out.row(i)[1] * stride_scale; //center y coordinate
-//            const float bw = out.row(i)[2] * stride_scale; //box width
-//            const float bh = out.row(i)[3] * stride_scale; //box height
-//
-//            // transform candidate box (center-x,center-y,w,h) to (x0,y0,x1,y1)
-//            float x0 = cx - bw * 0.5f;
-//            float y0 = cy - bh * 0.5f;
-//            float x1 = cx + bw * 0.5f;
-//            float y1 = cy + bh * 0.5f;
-//
-//            // collect candidates
-//            Object obj;
-//            obj.rect.x = x0;
-//            obj.rect.y = y0;
-//            obj.rect.width = x1 - x0;
-//            obj.rect.height = y1 - y0;
-//            obj.label = class_index;
-//            obj.prob = score;
-//            obj.mask_feat.resize(32);
-//            std::copy(out.row(i) + 4 + num_class, out.row(i) + 4 + num_class + 32, obj.mask_feat.begin());
-//                proposals.push_back(obj);
-//        }
-//    }
+    const int num_grid = out.h;
+    const int num_class = out.w - 4 - 32;
+    for (int i = 0; i < num_grid; i++) {
+
+        // find class index with max class score
+        int class_index = 0;
+        float class_score = -FLT_MAX;
+        for (int k = 0; k < num_class; k++) {
+            float score = out.row(i)[4 + k];
+            if (score > class_score) {
+                class_index = k;
+                class_score = score;
+            }
+        }
+        // combined score = box score * class score
+        float score = class_score;
+
+        // filter candidate boxes with combined score >= prob_threshold
+        if (score >= prob_threshold) {
+            std::cout << i << " " << score << " " << out.row(i)[0] << " " << out.row(i)[1] << " " << std::endl;
+
+            float stride_scale = 1.0;
+            if(i >= 6400 && i < 8000){
+                stride_scale = 2.0;
+            } else if (i >= 8000){
+                stride_scale = 4.0;
+            }
+
+            const float cx = out.row(i)[0] * stride_scale; //center x coordinate
+            const float cy = out.row(i)[1] * stride_scale; //center y coordinate
+            const float bw = out.row(i)[2] * stride_scale; //box width
+            const float bh = out.row(i)[3] * stride_scale; //box height
+
+            // transform candidate box (center-x,center-y,w,h) to (x0,y0,x1,y1)
+            float x0 = cx - bw * 0.5f;
+            float y0 = cy - bh * 0.5f;
+            float x1 = cx + bw * 0.5f;
+            float y1 = cy + bh * 0.5f;
+
+            // collect candidates
+            Object obj;
+            obj.rect.x = x0;
+            obj.rect.y = y0;
+            obj.rect.width = x1 - x0;
+            obj.rect.height = y1 - y0;
+            obj.label = class_index;
+            obj.prob = score;
+            obj.mask_feat.resize(32);
+            std::copy(out.row(i) + 4 + num_class, out.row(i) + 4 + num_class + 32, obj.mask_feat.begin());
+                proposals.push_back(obj);
+        }
+    }
 
 
     // sort all candidates by score from highest to lowest
@@ -646,7 +622,7 @@ void test_yolo_nas_ncnn() {
     int res = load(bin_file, param_file);
     std::cout << "init res: " << res << std::endl;
     cv::Mat image = cv::imread(image_file, 1);
-//    ncnn::Mat input = ncnn::Mat::from_pixels_resize(image.data, ncnn::Mat::PIXEL_BGR2RGB, image.cols, image.rows, 640, 640);
+    ncnn::Mat input = ncnn::Mat::from_pixels_resize(image.data, ncnn::Mat::PIXEL_BGR2RGB, image.cols, image.rows, 640, 640);
 //    ncnn::Extractor ex = yolo_nas_ncnn_net.create_extractor();
 //    ex.input("input.1", input);
 //    for(auto &in_name : yolo_nas_ncnn_net.input_names()) {
@@ -662,13 +638,13 @@ void test_yolo_nas_ncnn() {
 //
 //    }
 
-    get_blob_name("input.1","1049","1051","out2","out3","out1");
+    get_blob_name("input.1","1048","1049","out2","out3","out1");
     std::vector<Object> objects;
     detect(image, objects);
-    draw_objects(image, objects, 1);
+//    draw_objects(image, objects, 1);
 
-    cv::imshow("a", image);
-    cv::waitKey(0);
+//    cv::imshow("a", image);
+//    cv::waitKey(0);
 //    cv::imwrite("../data/traffic_road_detect_v8.jpg", image);
 
 
