@@ -61,15 +61,14 @@ struct GridAndStride
     int grid1;
     int stride;
 };
-static void generate_proposals(std::vector<GridAndStride> grid_strides, const ncnn::Mat& pred, float prob_threshold, std::vector<Object>& objects)
+static void generate_proposals(std::vector<GridAndStride> grid_strides, const ncnn::Mat& box_pred, const ncnn::Mat& cls_pred, float prob_threshold, std::vector<Object>& objects)
 {
     const int num_points = grid_strides.size();
     const int num_class = 80;
-    const int reg_max_1 = 16;
 
     for (int i = 0; i < num_points; i++)
     {
-        const float* scores = pred.row(i) + 4 * reg_max_1;
+        const float* scores = cls_pred.row(i);
 
         // find label with max score
         int label = -1;
@@ -83,59 +82,30 @@ static void generate_proposals(std::vector<GridAndStride> grid_strides, const nc
                 score = confidence;
             }
         }
-        float box_prob = sigmoid(score);
-        if (box_prob >= prob_threshold)
+        if (score >= prob_threshold)
         {
-            ncnn::Mat bbox_pred(reg_max_1, 4, (void*)pred.row(i));
-            {
-                ncnn::Layer* softmax = ncnn::create_layer("Softmax");
-
-                ncnn::ParamDict pd;
-                pd.set(0, 1); // axis
-                pd.set(1, 1);
-                softmax->load_param(pd);
-
-                ncnn::Option opt;
-                opt.num_threads = 1;
-                opt.use_packing_layout = false;
-
-                softmax->create_pipeline(opt);
-
-                softmax->forward_inplace(bbox_pred, opt);
-
-                softmax->destroy_pipeline(opt);
-
-                delete softmax;
-            }
 
             float pred_ltrb[4];
             for (int k = 0; k < 4; k++)
             {
                 float dis = 0.f;
-                const float* dis_after_sm = bbox_pred.row(k);
-                for (int l = 0; l < reg_max_1; l++)
-                {
-                    dis += l * dis_after_sm[l];
-                }
+                const float* dis_after_sm = box_pred.row(k);
 
-                pred_ltrb[k] = dis * grid_strides[i].stride;
+                pred_ltrb[0] = (-dis_after_sm[0] + grid_strides[i].grid0) * grid_strides[i].stride;
+                pred_ltrb[1] = (-dis_after_sm[1] + grid_strides[i].grid1) * grid_strides[i].stride;
+                pred_ltrb[2] = (dis_after_sm[2] + grid_strides[i].grid0) * grid_strides[i].stride;
+                pred_ltrb[3] = (dis_after_sm[3] + grid_strides[i].grid1) * grid_strides[i].stride;
+
             }
 
-            float pb_cx = (grid_strides[i].grid0 + 0.5f) * grid_strides[i].stride;
-            float pb_cy = (grid_strides[i].grid1 + 0.5f) * grid_strides[i].stride;
-
-            float x0 = pb_cx - pred_ltrb[0];
-            float y0 = pb_cy - pred_ltrb[1];
-            float x1 = pb_cx + pred_ltrb[2];
-            float y1 = pb_cy + pred_ltrb[3];
 
             Object obj;
-            obj.rect.x = x0;
-            obj.rect.y = y0;
-            obj.rect.width = x1 - x0;
-            obj.rect.height = y1 - y0;
+            obj.rect.x = (pred_ltrb[2] - pred_ltrb[0]) / 2;
+            obj.rect.y = (pred_ltrb[3] - pred_ltrb[1]) / 2;
+            obj.rect.width = pred_ltrb[2] - pred_ltrb[0];
+            obj.rect.height = pred_ltrb[3] - pred_ltrb[1];
             obj.label = label;
-            obj.prob = box_prob;
+            obj.prob = score;
 //            obj.mask_feat.resize(32);
 //            std::copy(pred.row(i) + 64 + num_class, pred.row(i) + 64 + num_class + 32, obj.mask_feat.begin());
             objects.push_back(obj);
@@ -210,92 +180,38 @@ int detect(const cv::Mat& bgr, std::vector<Object>& objects) {
     //inference
     ncnn::Extractor ex = yolo_nas_ncnn_net.create_extractor();
     ex.input(yolo_nas_ncnn_in_blob.c_str(), in_pad);
-    ncnn::Mat out;
-    ex.extract(yolo_nas_ncnn_out_blob.c_str(), out);
+    ncnn::Mat box_out;
+    ex.extract(yolo_nas_ncnn_out_blob.c_str(), box_out);
+    ncnn::Mat cls_out;
+    ex.extract(yolo_nas_ncnn_out1_blob.c_str(), cls_out);
     std::cout << "in_pad: " << in_pad.w << " " << in_pad.h << " " <<  in_pad.d << " " <<  in_pad.c << std::endl;
-    std::cout << "out: " << out.w << " " << out.h << " " <<  out.d << " " <<  out.c << std::endl;
+    std::cout << "box_out: " << box_out.w << " " << box_out.h << " " <<  box_out.d << " " <<  box_out.c << std::endl;
+    std::cout << "cls_out: " << cls_out.w << " " << cls_out.h << " " <<  cls_out.d << " " <<  cls_out.c << std::endl;
 
 //    ncnn::Mat mask_proto;
 //    ex.extract(yolo_nas_seg_ncnn_seg_blob.c_str(), mask_proto);
 //    std::cout << "mask_proto: " << mask_proto.w << " " << mask_proto.h << " " <<  mask_proto.d << " " <<  mask_proto.c << std::endl;
-    ncnn::Mat t_out;
-    transpose(out, t_out);
 
     std::vector<int> strides = { 8, 16, 32 };
     std::vector<GridAndStride> grid_strides;
     generate_grids_and_stride(in_pad.w, in_pad.h, strides, grid_strides);
     std::cout << "grids_and_stride: " << grid_strides.size() << std::endl;
 
-    std::vector<Object> proposals;
+//    std::vector<Object> proposals;
     std::vector<Object> objects8;
-    generate_proposals(grid_strides, t_out, prob_threshold, objects8);
+    generate_proposals(grid_strides, box_out, cls_out, prob_threshold, objects8);
     std::cout << "objects8: " << objects8.size() << std::endl;
 
-    proposals.insert(proposals.end(), objects8.begin(), objects8.end());
-    std::cout << "proposals: " << proposals.size() << std::endl;
-
-
-//    std::vector<Object> proposals;
-    const int num_grid = out.h;
-    const int num_class = out.w - 4 - 32;
-    for (int i = 0; i < num_grid; i++) {
-
-        // find class index with max class score
-        int class_index = 0;
-        float class_score = -FLT_MAX;
-        for (int k = 0; k < num_class; k++) {
-            float score = out.row(i)[4 + k];
-            if (score > class_score) {
-                class_index = k;
-                class_score = score;
-            }
-        }
-        // combined score = box score * class score
-        float score = class_score;
-
-        // filter candidate boxes with combined score >= prob_threshold
-        if (score >= prob_threshold) {
-            std::cout << i << " " << score << " " << out.row(i)[0] << " " << out.row(i)[1] << " " << std::endl;
-
-            float stride_scale = 1.0;
-            if(i >= 6400 && i < 8000){
-                stride_scale = 2.0;
-            } else if (i >= 8000){
-                stride_scale = 4.0;
-            }
-
-            const float cx = out.row(i)[0] * stride_scale; //center x coordinate
-            const float cy = out.row(i)[1] * stride_scale; //center y coordinate
-            const float bw = out.row(i)[2] * stride_scale; //box width
-            const float bh = out.row(i)[3] * stride_scale; //box height
-
-            // transform candidate box (center-x,center-y,w,h) to (x0,y0,x1,y1)
-            float x0 = cx - bw * 0.5f;
-            float y0 = cy - bh * 0.5f;
-            float x1 = cx + bw * 0.5f;
-            float y1 = cy + bh * 0.5f;
-
-            // collect candidates
-            Object obj;
-            obj.rect.x = x0;
-            obj.rect.y = y0;
-            obj.rect.width = x1 - x0;
-            obj.rect.height = y1 - y0;
-            obj.label = class_index;
-            obj.prob = score;
-            obj.mask_feat.resize(32);
-            std::copy(out.row(i) + 4 + num_class, out.row(i) + 4 + num_class + 32, obj.mask_feat.begin());
-                proposals.push_back(obj);
-        }
-    }
+//    proposals.insert(proposals.end(), objects8.begin(), objects8.end());
+//    std::cout << "proposals: " << proposals.size() << std::endl;
 
 
     // sort all candidates by score from highest to lowest
-    qsort_descent_inplace(proposals);
+    qsort_descent_inplace(objects8);
 
     // apply non max suppression
     std::vector<int> picked;
-    nms_sorted_bboxes(proposals, picked, nms_threshold);
+    nms_sorted_bboxes(objects8, picked, nms_threshold);
     std::cout << "nms picked: " << picked.size() << std::endl;
 
 
@@ -315,7 +231,7 @@ int detect(const cv::Mat& bgr, std::vector<Object>& objects) {
     objects.resize(count);
     for (int i = 0; i < count; i++)
     {
-        objects[i] = proposals[picked[i]];
+        objects[i] = objects8[picked[i]];
 
         // adjust offset to original unpadded
         float x0 = (objects[i].rect.x - (wpad / 2)) / scale;
@@ -641,7 +557,7 @@ void test_yolo_nas_ncnn() {
     get_blob_name("input.1","1048","1049","out2","out3","out1");
     std::vector<Object> objects;
     detect(image, objects);
-//    draw_objects(image, objects, 1);
+    draw_objects(image, objects, 1);
 
 //    cv::imshow("a", image);
 //    cv::waitKey(0);
