@@ -23,7 +23,7 @@ std::string yolo_nas_ncnn_out2_blob;
 std::string yolo_nas_ncnn_out3_blob;
 std::string yolo_nas_ncnn_seg_blob;
 int target_size = 640;
-float prob_threshold = 0.25;
+float prob_threshold = 0.50;
 float nms_threshold  = 0.45;
 std::vector<std::string> class_names = { "person", "bicycle", "car", "motorcycle", "airplane", "bus",
                                          "train", "truck", "boat", "traffic light", "fire hydrant",
@@ -61,6 +61,7 @@ struct GridAndStride
     int grid1;
     int stride;
 };
+
 static void generate_proposals(std::vector<GridAndStride> grid_strides, const ncnn::Mat& box_pred, const ncnn::Mat& cls_pred, float prob_threshold, std::vector<Object>& objects)
 {
     const int num_points = grid_strides.size();
@@ -75,7 +76,7 @@ static void generate_proposals(std::vector<GridAndStride> grid_strides, const nc
         float score = -FLT_MAX;
         for (int k = 0; k < num_class; k++)
         {
-            float confidence = scores[k];
+            float confidence = *(scores+k);
             if (confidence > score)
             {
                 label = k;
@@ -85,25 +86,27 @@ static void generate_proposals(std::vector<GridAndStride> grid_strides, const nc
         if (score >= prob_threshold)
         {
 
-            float pred_ltrb[4];
-            for (int k = 0; k < 4; k++)
-            {
-                float dis = 0.f;
-                const float* dis_after_sm = box_pred.row(k);
+            const float *dis_after_sm = box_pred.row(i);
+            float x1 = (-(dis_after_sm[0]) + grid_strides[i].grid0) * grid_strides[i].stride;
+            float y1 = (-(dis_after_sm[1])  + grid_strides[i].grid1) * grid_strides[i].stride;
+            float x2 = (dis_after_sm[2]  + grid_strides[i].grid0) * grid_strides[i].stride;
+            float y2 = (dis_after_sm[3]  + grid_strides[i].grid1) * grid_strides[i].stride;
+            std::cout << dis_after_sm[0] << " " << dis_after_sm[1] << " " << dis_after_sm[2] << " " << dis_after_sm[3] << std::endl;
+            std::cout << x1<< " " << y1 << " " << x2 << " " << y2 << std::endl;
+            std::cout << "---" << std::endl;
 
-                pred_ltrb[0] = (-dis_after_sm[0] + grid_strides[i].grid0) * grid_strides[i].stride;
-                pred_ltrb[1] = (-dis_after_sm[1] + grid_strides[i].grid1) * grid_strides[i].stride;
-                pred_ltrb[2] = (dis_after_sm[2] + grid_strides[i].grid0) * grid_strides[i].stride;
-                pred_ltrb[3] = (dis_after_sm[3] + grid_strides[i].grid1) * grid_strides[i].stride;
+//            pred_ltrb[0] = dis_after_sm[0];
+//            pred_ltrb[1] = dis_after_sm[1];
+//            pred_ltrb[2] = dis_after_sm[2];
+//            pred_ltrb[3] = dis_after_sm[3];
 
-            }
 
 
             Object obj;
-            obj.rect.x = (pred_ltrb[2] - pred_ltrb[0]) / 2;
-            obj.rect.y = (pred_ltrb[3] - pred_ltrb[1]) / 2;
-            obj.rect.width = pred_ltrb[2] - pred_ltrb[0];
-            obj.rect.height = pred_ltrb[3] - pred_ltrb[1];
+            obj.rect.x = (x2 + x1) / 2;
+            obj.rect.y = (y2 + y1) / 2;
+            obj.rect.width = x2 - x1;
+            obj.rect.height = y2 - y1;
             obj.label = label;
             obj.prob = score;
 //            obj.mask_feat.resize(32);
@@ -124,8 +127,8 @@ static void generate_grids_and_stride(const int target_w, const int target_h, st
             for (int g0 = 0; g0 < num_grid_w; g0++)
             {
                 GridAndStride gs;
-                gs.grid0 = g0;
-                gs.grid1 = g1;
+                gs.grid0 = g0 + 0.5;
+                gs.grid1 = g1 + 0.5;
                 gs.stride = stride;
                 grid_strides.push_back(gs);
             }
@@ -531,16 +534,17 @@ void draw_objects(cv::Mat& bgr, const std::vector<Object>& objects, int mode) {
 
 
 void test_yolo_nas_ncnn() {
+    std::cout << "yolo-nas detecting." << std::endl;
     std::string image_file("/Users/yang/CLionProjects/test_ncnn2/data/traffic_road.jpg");
-    std::string param_file("/Users/yang/CLionProjects/test_ncnn2/yolo-nas/yolo_nas_s-sim-opt-fp16.param");
-    std::string bin_file("/Users/yang/CLionProjects/test_ncnn2/yolo-nas/yolo_nas_s-sim-opt-fp16.bin");
-
+    std::string param_file("/Users/yang/CLionProjects/test_ncnn2/yolo-nas/yolo-nas-s.ncnn.param");
+    std::string bin_file("/Users/yang/CLionProjects/test_ncnn2/yolo-nas/yolo-nas-s.ncnn.bin");
+//
     int res = load(bin_file, param_file);
     std::cout << "init res: " << res << std::endl;
     cv::Mat image = cv::imread(image_file, 1);
     ncnn::Mat input = ncnn::Mat::from_pixels_resize(image.data, ncnn::Mat::PIXEL_BGR2RGB, image.cols, image.rows, 640, 640);
 //    ncnn::Extractor ex = yolo_nas_ncnn_net.create_extractor();
-//    ex.input("input.1", input);
+//    ex.input("in0", input);
 //    for(auto &in_name : yolo_nas_ncnn_net.input_names()) {
 //        ncnn::Mat in;
 //        ex.extract(in_name, in);
@@ -554,13 +558,13 @@ void test_yolo_nas_ncnn() {
 //
 //    }
 
-    get_blob_name("input.1","1048","1049","out2","out3","out1");
+    get_blob_name("in0","out0","out1","out2","out3","out1");
     std::vector<Object> objects;
     detect(image, objects);
     draw_objects(image, objects, 1);
 
-//    cv::imshow("a", image);
-//    cv::waitKey(0);
+    cv::imshow("a", image);
+    cv::waitKey(0);
 //    cv::imwrite("../data/traffic_road_detect_v8.jpg", image);
 
 
