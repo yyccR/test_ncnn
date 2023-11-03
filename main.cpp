@@ -4,14 +4,25 @@
 //#include "yolov8-seg/yolov8_seg_ncnn.cpp"
 //#include "yolov8-pose/yolov8_pose_ncnn.cpp"
 //#include "yolov8/yolov8_ncnn.cpp"
-#include "yolo-nas/yolo_nas_ncnn.cpp"
+//#include "yolo-nas/yolo_nas_ncnn.cpp"
 
 int main() {
+//    typedef struct DetectResults {
+//        float score;
+//        int label;
+//        int* box_pred;
+//        float* mask_pred;
+//    } DetectResults;
+    int a[] = {1,2,3,4} ;
+    int*b = a;
+    for(int i = 0; i<4; i++){
+        std::cout << b+i << " " << *(b+i) << std::endl;
+    }
 //    test_yolov5_seg_ncnn();
 //    test_yolov8_seg_ncnn();
 //    test_yolov8_pose_ncnn();
 //    test_yolov8_ncnn();
-    test_yolo_nas_ncnn();
+//    test_yolo_nas_ncnn();
 
     return 0;
 }
