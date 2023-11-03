@@ -523,6 +523,7 @@ void test_yolov5_seg_ncnn() {
     cv::imshow("a", image);
     cv::waitKey(0);
 
+//    net.clear();
 //    cv::imwrite("../data/bus-seg.jpeg", image);
 //    std::cout << "test ncnn" << std::endl;
 }
