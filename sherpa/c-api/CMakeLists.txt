@@ -1,8 +1,8 @@
-#include_directories(${CMAKE_SOURCE_DIR})
-#find_package(ncnn REQUIRED)
-#add_library(sherpa-ncnn-c-api c-api.cc)
-#target_link_libraries(sherpa-ncnn-c-api sherpa-ncnn-core)
-#target_link_libraries(sherpa-ncnn-c-api ncnn)
+include_directories(${CMAKE_SOURCE_DIR})
+find_package(ncnn REQUIRED)
+add_library(sherpa-ncnn-c-api c-api.cc)
+target_link_libraries(sherpa-ncnn-c-api sherpa-ncnn-core)
+target_link_libraries(sherpa-ncnn-c-api ncnn)
 
 #include_directories(${CMAKE_SOURCE_DIR})
 #include_directories(${CMAKE_CURRENT_SOURCE_DIR}}/../csrc)
