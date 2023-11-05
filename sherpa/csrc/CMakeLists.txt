@@ -4,7 +4,7 @@ find_package(ncnn REQUIRED)
 
 add_library(kaldi-native-fbank-core SHARED IMPORTED)
 set_target_properties(kaldi-native-fbank-core PROPERTIES IMPORTED_LOCATION
-        ${CMAKE_CURRENT_LIST_DIR}/../libkaldi-native-fbank-core.so)
+        ${CMAKE_CURRENT_LIST_DIR}/../libkaldi-native-fbank-core.dylib)
 
 set(sherpa_ncnn_core_srcs
   context-graph.cc
