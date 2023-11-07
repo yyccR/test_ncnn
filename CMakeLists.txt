@@ -42,11 +42,11 @@ set_target_properties(libsherpa-ncnn-portaudio PROPERTIES IMPORTED_LOCATION
 add_executable(test_ncnn2 main.cpp)
 
 target_link_libraries(test_ncnn2 ncnn)
-#target_link_libraries(test_ncnn2 libncnn)
+target_link_libraries(test_ncnn2 libncnn)
 target_link_libraries(test_ncnn2 libsherpa-ncnn-portaudio)
 target_link_libraries(test_ncnn2 kaldi-native-fbank-core)
 target_link_libraries(test_ncnn2 libsherpa-ncnn-c-api)
-#target_link_libraries(test_ncnn2 libsherpa-ncnn-core)
+target_link_libraries(test_ncnn2 libsherpa-ncnn-core)
 
 target_link_libraries(test_ncnn2 ${OpenCV_LIBS})
 target_link_libraries(test_ncnn2 common_lib)
