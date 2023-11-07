@@ -1,11 +1,11 @@
 #include <iostream>
 
-//#include "yolov5-seg/yolov5_seg_ncnn.cpp"
-//#include "yolov8-seg/yolov8_seg_ncnn.cpp"
-//#include "yolov8-pose/yolov8_pose_ncnn.cpp"
-//#include "yolov8/yolov8_ncnn.cpp"
-//#include "yolo-nas/yolo_nas_ncnn.cpp"
-#include "sherpa/sherpa_ncnn.cpp";
+//#alsa "yolov5-seg/yolov5_seg_ncnn.cpp"
+//#alsa "yolov8-seg/yolov8_seg_ncnn.cpp"
+//#alsa "yolov8-pose/yolov8_pose_ncnn.cpp"
+//#alsa "yolov8/yolov8_ncnn.cpp"
+//#alsa "yolo-nas/yolo_nas_ncnn.cpp"
+#include "sherpa/sherpa_ncnn.cpp"
 
 int main() {
 //    typedef struct DetectResults {

@@ -2,7 +2,7 @@
 #include <iostream>
 #include <string>
 #include "net.h"
-#include "c-api/c-api.h"
+#include "sherpa-ncnn/c-api/c-api.h"
 
 void test_sherpa_ncnn() {
 
@@ -45,7 +45,7 @@ void test_sherpa_ncnn() {
 //    }
 //
     SherpaNcnnRecognizer *recognizer = CreateRecognizer(&config);
-//
+
     const char *wav_filename = wav_file.c_str();
     FILE *fp = fopen(wav_filename, "rb");
     if (!fp) {
@@ -58,7 +58,7 @@ void test_sherpa_ncnn() {
 
     // simulate streaming
 
-#define N 3200  // 0.2 s. Sample rate is fixed to 16 kHz
+    int N = 3200;  // 0.2 s. Sample rate is fixed to 16 kHz
 
     int16_t buffer[N];
     float samples[N];
