@@ -5,7 +5,8 @@
 //#alsa "yolov8-pose/yolov8_pose_ncnn.cpp"
 //#alsa "yolov8/yolov8_ncnn.cpp"
 //#alsa "yolo-nas/yolo_nas_ncnn.cpp"
-#include "sherpa/sherpa_ncnn.cpp"
+//#include "sherpa/sherpa_ncnn.cpp"
+#include "realsr/realsr_ncnn.cpp"
 
 int main() {
 //    typedef struct DetectResults {
@@ -24,7 +25,8 @@ int main() {
 //    test_yolov8_pose_ncnn();
 //    test_yolov8_ncnn();
 //    test_yolo_nas_ncnn();
-    test_sherpa_ncnn();
+//    test_sherpa_ncnn();
+    test_realsr_ncnn();
 
     return 0;
 }
