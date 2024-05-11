@@ -1,6 +1,6 @@
 
 #include "realsr.h"
-
+#include <iostream>
 #include <algorithm>
 #include <vector>
 
@@ -36,17 +36,15 @@ RealSR::~RealSR()
 
 int RealSR::load(const std::string& parampath, const std::string& modelpath)
 {
-    net.opt.use_vulkan_compute = vkdev ? true : false;
-    net.opt.use_fp16_packed = true;
-    net.opt.use_fp16_storage = vkdev ? true : false;
-    net.opt.use_fp16_arithmetic = false;
-    net.opt.use_int8_storage = true;
-
-    net.set_vulkan_device(vkdev);
-
+//    net.opt.use_vulkan_compute = vkdev ? true : false;
+//    net.opt.use_fp16_packed = true;
+//    net.opt.use_fp16_storage = vkdev ? true : false;
+//    net.opt.use_fp16_arithmetic = false;
+//    net.opt.use_int8_storage = true;
+//
+//    net.set_vulkan_device(vkdev);
     net.load_param(parampath.c_str());
     net.load_model(modelpath.c_str());
-
     // initialize preprocess and postprocess pipeline
 //    if (vkdev)
 //    {
@@ -102,7 +100,6 @@ int RealSR::load(const std::string& parampath, const std::string& modelpath)
         pd.set(1, 4.f);
         pd.set(2, 4.f);
         bicubic_4x->load_param(pd);
-
         bicubic_4x->create_pipeline(net.opt);
     }
 
@@ -266,9 +263,9 @@ int RealSR::process(const ncnn::Mat& inimage, ncnn::Mat& outimage) const
                     ex.set_workspace_vkallocator(blob_vkallocator);
                     ex.set_staging_vkallocator(staging_vkallocator);
 
-                    ex.input("data", in_tile_gpu[ti]);
+                    ex.input("in0", in_tile_gpu[ti]);
 
-                    ex.extract("output", out_tile_gpu[ti], cmd);
+                    ex.extract("out0", out_tile_gpu[ti], cmd);
 
                     {
                         cmd.submit_and_wait();
@@ -382,9 +379,9 @@ int RealSR::process(const ncnn::Mat& inimage, ncnn::Mat& outimage) const
                     ex.set_workspace_vkallocator(blob_vkallocator);
                     ex.set_staging_vkallocator(staging_vkallocator);
 
-                    ex.input("data", in_tile_gpu);
+                    ex.input("in0", in_tile_gpu);
 
-                    ex.extract("output", out_tile_gpu, cmd);
+                    ex.extract("out0", out_tile_gpu, cmd);
                 }
 
                 ncnn::VkMat out_alpha_tile_gpu;
@@ -478,7 +475,7 @@ int RealSR::process_cpu(const ncnn::Mat& inimage, ncnn::Mat& outimage) const
     const unsigned char* pixeldata = (const unsigned char*)inimage.data;
     const int w = inimage.w;
     const int h = inimage.h;
-    const int channels = inimage.elempack;
+    const int channels = 3;
 
     const int TILE_SIZE_X = tilesize;
     const int TILE_SIZE_Y = tilesize;
@@ -515,6 +512,8 @@ int RealSR::process_cpu(const ncnn::Mat& inimage, ncnn::Mat& outimage) const
                     in = ncnn::Mat::from_pixels_roi(pixeldata, ncnn::Mat::PIXEL_RGBA, w, h, in_tile_x0, in_tile_y0, in_tile_x1 - in_tile_x0, in_tile_y1 - in_tile_y0);
                 }
             }
+            std::cout << "in.channel: " << channels << std::endl;
+
 
             ncnn::Mat out;
 
@@ -713,9 +712,9 @@ int RealSR::process_cpu(const ncnn::Mat& inimage, ncnn::Mat& outimage) const
                 {
                     ncnn::Extractor ex = net.create_extractor();
 
-                    ex.input("data", in_tile);
+                    ex.input("in0", in_tile);
 
-                    ex.extract("output", out_tile);
+                    ex.extract("out0", out_tile);
                 }
 
                 ncnn::Mat out_alpha_tile;

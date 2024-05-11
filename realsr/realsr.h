@@ -23,12 +23,13 @@ public:
 
 public:
     // realsr parameters
-    int scale;
-    int tilesize;
-    int prepadding;
+    int scale = 4;
+    int tilesize = 100;
+    int prepadding = 10;
 
 private:
     ncnn::VulkanDevice* vkdev;
+//    int vkdev;
     ncnn::Net net;
     ncnn::Pipeline* realsr_preproc;
     ncnn::Pipeline* realsr_postproc;

@@ -3,7 +3,10 @@ project(test_ncnn2)
 
 set(CMAKE_CXX_STANDARD 17)
 
-find_package(ncnn REQUIRED)
+set(NCNN_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/lib/ncnn-20240410-macos-vulkan/ncnn.framework/Versions/A/Headers)
+include_directories(${NCNN_INCLUDE_DIRS})
+
+#find_package(ncnn REQUIRED)
 find_package(OpenCV REQUIRED core imgproc highgui)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/sherpa)
@@ -43,7 +46,9 @@ set_target_properties(libsherpa-ncnn-portaudio PROPERTIES IMPORTED_LOCATION
 #add_executable(test_ncnn2 main.cpp ${c-api-src-list} ${csrc-list})
 add_executable(test_ncnn2 main.cpp)
 
-target_link_libraries(test_ncnn2 ncnn)
+#target_link_libraries(test_ncnn2 ncnn)
+target_link_libraries(test_ncnn2 "${CMAKE_CURRENT_SOURCE_DIR}/lib/ncnn-20240410-macos-vulkan/ncnn.framework")
+target_link_libraries(test_ncnn2 "${CMAKE_CURRENT_SOURCE_DIR}/lib/ncnn-20240410-macos-vulkan/glslang.framework")
 target_link_libraries(test_ncnn2 libncnn)
 target_link_libraries(test_ncnn2 libsherpa-ncnn-portaudio)
 target_link_libraries(test_ncnn2 kaldi-native-fbank-core)
@@ -57,4 +62,4 @@ target_link_libraries(test_ncnn2 ${yolov8_lib})
 target_link_libraries(test_ncnn2 ${yolov8_pose_lib})
 target_link_libraries(test_ncnn2 ${yolov8_seg_lib})
 target_link_libraries(test_ncnn2 ${sherpa_lib})
-target_link_libraries(test_ncnn2 ${realsr_lib})
+target_link_libraries(test_ncnn2 realsr_lib)
