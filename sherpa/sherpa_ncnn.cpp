@@ -57,7 +57,6 @@ void test_sherpa_ncnn() {
     fseek(fp, 44, SEEK_SET);
 
     // simulate streaming
-
     int N = 3200;  // 0.2 s. Sample rate is fixed to 16 kHz
 
     int16_t buffer[N];
@@ -80,7 +79,8 @@ void test_sherpa_ncnn() {
 
             SherpaNcnnResult *r = GetResult(recognizer, s);
             if (strlen(r->text)) {
-                SherpaNcnnPrint(display, segment_id, r->text);
+                std::cout << r->text << std::endl;
+//                SherpaNcnnPrint(display, segment_id, r->text);
             }
             DestroyResult(r);
         }
@@ -88,20 +88,20 @@ void test_sherpa_ncnn() {
     fclose(fp);
 
     // add some tail padding
-    float tail_paddings[4800] = {0};  // 0.3 seconds at 16 kHz sample rate
-    AcceptWaveform(s, 16000, tail_paddings, 4800);
-
-    InputFinished(s);
-
-    while (IsReady(recognizer, s)) {
-        Decode(recognizer, s);
-    }
-    SherpaNcnnResult *r = GetResult(recognizer, s);
-    if (strlen(r->text)) {
-        SherpaNcnnPrint(display, segment_id, r->text);
-    }
-
-    DestroyResult(r);
+//    float tail_paddings[4800] = {0};  // 0.3 seconds at 16 kHz sample rate
+//    AcceptWaveform(s, 16000, tail_paddings, 4800);
+//
+//    InputFinished(s);
+//
+//    while (IsReady(recognizer, s)) {
+//        Decode(recognizer, s);
+//    }
+//    SherpaNcnnResult *r = GetResult(recognizer, s);
+//    if (strlen(r->text)) {
+//        SherpaNcnnPrint(display, segment_id, r->text);
+//    }
+//
+//    DestroyResult(r);
 
     DestroyDisplay(display);
 
