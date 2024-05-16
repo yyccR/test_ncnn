@@ -23,6 +23,7 @@ public:
 
 public:
     // realsr parameters
+//    int num_threads = num_threads;
     int scale = 4;
     int tilesize = 100;
     int prepadding = 10;
@@ -31,6 +32,7 @@ private:
     ncnn::VulkanDevice* vkdev;
 //    int vkdev;
     ncnn::Net net;
+//    std::vector<std::shared_ptr<ncnn::Net>> nets;
     ncnn::Pipeline* realsr_preproc;
     ncnn::Pipeline* realsr_postproc;
     ncnn::Layer* bicubic_4x;

@@ -1,13 +1,14 @@
+// realsr implemented with ncnn library
 
 #include "realsr.h"
-#include <iostream>
+
 #include <algorithm>
 #include <vector>
 
-//#include "realsr_preproc.comp.hex.h"
-//#include "realsr_postproc.comp.hex.h"
-//#include "realsr_preproc_tta.comp.hex.h"
-//#include "realsr_postproc_tta.comp.hex.h"
+#include "realsr_preproc.comp.hex.h"
+#include "realsr_postproc.comp.hex.h"
+#include "realsr_preproc_tta.comp.hex.h"
+#include "realsr_postproc_tta.comp.hex.h"
 
 RealSR::RealSR(int gpuid, bool _tta_mode, int num_threads)
 {
@@ -33,62 +34,103 @@ RealSR::~RealSR()
     delete bicubic_4x;
 }
 
-
+#if _WIN32
+int RealSR::load(const std::wstring& parampath, const std::wstring& modelpath)
+#else
 int RealSR::load(const std::string& parampath, const std::string& modelpath)
+#endif
 {
-//    net.opt.use_vulkan_compute = vkdev ? true : false;
-//    net.opt.use_fp16_packed = true;
-//    net.opt.use_fp16_storage = vkdev ? true : false;
-//    net.opt.use_fp16_arithmetic = false;
-//    net.opt.use_int8_storage = true;
+    net.opt.use_vulkan_compute = vkdev ? true : false;
+    net.opt.use_fp16_packed = true;
+    net.opt.use_fp16_storage = vkdev ? true : false;
+    net.opt.use_fp16_arithmetic = false;
+    net.opt.use_int8_storage = true;
+
+    net.set_vulkan_device(vkdev);
+
+#if _WIN32
+    {
+        FILE* fp = _wfopen(parampath.c_str(), L"rb");
+        if (!fp)
+        {
+            fwprintf(stderr, L"_wfopen %ls failed\n", parampath.c_str());
+        }
+
+        net.load_param(fp);
+
+        fclose(fp);
+    }
+    {
+        FILE* fp = _wfopen(modelpath.c_str(), L"rb");
+        if (!fp)
+        {
+            fwprintf(stderr, L"_wfopen %ls failed\n", modelpath.c_str());
+        }
+
+        net.load_model(fp);
+
+        fclose(fp);
+    }
+#else
+//    this->nets.resize(this->num_threads);
+//    for(int i = 0; i < this->num_threads; i++) {
+//        this->nets[i] = std::make_shared<ncnn::Net>();
+//        this->nets[i]->load_param(parampath.c_str());
+//        this->nets[i]->load_model(modelpath.c_str());
 //
-//    net.set_vulkan_device(vkdev);
+//    }
     net.load_param(parampath.c_str());
     net.load_model(modelpath.c_str());
+#endif
+
     // initialize preprocess and postprocess pipeline
-//    if (vkdev)
-//    {
-//        std::vector<ncnn::vk_specialization_type> specializations(1);
-//        specializations[0].i = 0;
-//
-//        {
-//            static std::vector<uint32_t> spirv;
-//            static ncnn::Mutex lock;
-//            {
-//                ncnn::MutexLockGuard guard(lock);
-//                if (spirv.empty())
-//                {
-//                    if (tta_mode)
-//                        compile_spirv_module(realsr_preproc_tta_comp_data, sizeof(realsr_preproc_tta_comp_data), net.opt, spirv);
-//                    else
-//                        compile_spirv_module(realsr_preproc_comp_data, sizeof(realsr_preproc_comp_data), net.opt, spirv);
-//                }
-//            }
-//
-//            realsr_preproc = new ncnn::Pipeline(vkdev);
-//            realsr_preproc->set_optimal_local_size_xyz(8, 8, 3);
-//            realsr_preproc->create(spirv.data(), spirv.size() * 4, specializations);
-//        }
-//
-//        {
-//            static std::vector<uint32_t> spirv;
-//            static ncnn::Mutex lock;
-//            {
-//                ncnn::MutexLockGuard guard(lock);
-//                if (spirv.empty())
-//                {
-//                    if (tta_mode)
-//                        compile_spirv_module(realsr_postproc_tta_comp_data, sizeof(realsr_postproc_tta_comp_data), net.opt, spirv);
-//                    else
-//                        compile_spirv_module(realsr_postproc_comp_data, sizeof(realsr_postproc_comp_data), net.opt, spirv);
-//                }
-//            }
-//
-//            realsr_postproc = new ncnn::Pipeline(vkdev);
-//            realsr_postproc->set_optimal_local_size_xyz(8, 8, 3);
-//            realsr_postproc->create(spirv.data(), spirv.size() * 4, specializations);
-//        }
-//    }
+    if (vkdev)
+    {
+        std::vector<ncnn::vk_specialization_type> specializations(1);
+#if _WIN32
+        specializations[0].i = 1;
+#else
+        specializations[0].i = 0;
+#endif
+
+        {
+            static std::vector<uint32_t> spirv;
+            static ncnn::Mutex lock;
+            {
+                ncnn::MutexLockGuard guard(lock);
+                if (spirv.empty())
+                {
+                    if (tta_mode)
+                        compile_spirv_module(realsr_preproc_tta_comp_data, sizeof(realsr_preproc_tta_comp_data), net.opt, spirv);
+                    else
+                        compile_spirv_module(realsr_preproc_comp_data, sizeof(realsr_preproc_comp_data), net.opt, spirv);
+                }
+            }
+
+            realsr_preproc = new ncnn::Pipeline(vkdev);
+            realsr_preproc->set_optimal_local_size_xyz(8, 8, 3);
+            realsr_preproc->create(spirv.data(), spirv.size() * 4, specializations);
+        }
+
+        {
+            static std::vector<uint32_t> spirv;
+            static ncnn::Mutex lock;
+            {
+                ncnn::MutexLockGuard guard(lock);
+                if (spirv.empty())
+                {
+                    if (tta_mode)
+                        compile_spirv_module(realsr_postproc_tta_comp_data, sizeof(realsr_postproc_tta_comp_data), net.opt, spirv);
+                    else
+                        compile_spirv_module(realsr_postproc_comp_data, sizeof(realsr_postproc_comp_data), net.opt, spirv);
+                }
+            }
+
+            realsr_postproc = new ncnn::Pipeline(vkdev);
+            realsr_postproc->set_optimal_local_size_xyz(8, 8, 3);
+            realsr_postproc->create(spirv.data(), spirv.size() * 4, specializations);
+        }
+    }
 
     // bicubic 4x for alpha channel
     {
@@ -100,6 +142,7 @@ int RealSR::load(const std::string& parampath, const std::string& modelpath)
         pd.set(1, 4.f);
         pd.set(2, 4.f);
         bicubic_4x->load_param(pd);
+
         bicubic_4x->create_pipeline(net.opt);
     }
 
@@ -153,11 +196,19 @@ int RealSR::process(const ncnn::Mat& inimage, ncnn::Mat& outimage) const
         {
             if (channels == 3)
             {
+#if _WIN32
+                in = ncnn::Mat::from_pixels(pixeldata + in_tile_y0 * w * channels, ncnn::Mat::PIXEL_BGR2RGB, w, (in_tile_y1 - in_tile_y0));
+#else
                 in = ncnn::Mat::from_pixels(pixeldata + in_tile_y0 * w * channels, ncnn::Mat::PIXEL_RGB, w, (in_tile_y1 - in_tile_y0));
+#endif
             }
             if (channels == 4)
             {
+#if _WIN32
+                in = ncnn::Mat::from_pixels(pixeldata + in_tile_y0 * w * channels, ncnn::Mat::PIXEL_BGRA2RGBA, w, (in_tile_y1 - in_tile_y0));
+#else
                 in = ncnn::Mat::from_pixels(pixeldata + in_tile_y0 * w * channels, ncnn::Mat::PIXEL_RGBA, w, (in_tile_y1 - in_tile_y0));
+#endif
             }
         }
 
@@ -263,8 +314,10 @@ int RealSR::process(const ncnn::Mat& inimage, ncnn::Mat& outimage) const
                     ex.set_workspace_vkallocator(blob_vkallocator);
                     ex.set_staging_vkallocator(staging_vkallocator);
 
+//                    ex.input("data", in_tile_gpu[ti]);
                     ex.input("in0", in_tile_gpu[ti]);
 
+//                    ex.extract("output", out_tile_gpu[ti], cmd);
                     ex.extract("out0", out_tile_gpu[ti], cmd);
 
                     {
@@ -379,8 +432,10 @@ int RealSR::process(const ncnn::Mat& inimage, ncnn::Mat& outimage) const
                     ex.set_workspace_vkallocator(blob_vkallocator);
                     ex.set_staging_vkallocator(staging_vkallocator);
 
+//                    ex.input("data", in_tile_gpu);
                     ex.input("in0", in_tile_gpu);
 
+//                    ex.extract("output", out_tile_gpu, cmd);
                     ex.extract("out0", out_tile_gpu, cmd);
                 }
 
@@ -454,11 +509,19 @@ int RealSR::process(const ncnn::Mat& inimage, ncnn::Mat& outimage) const
             {
                 if (channels == 3)
                 {
+#if _WIN32
+                    out.to_pixels((unsigned char*)outimage.data + yi * scale * TILE_SIZE_Y * w * scale * channels, ncnn::Mat::PIXEL_RGB2BGR);
+#else
                     out.to_pixels((unsigned char*)outimage.data + yi * scale * TILE_SIZE_Y * w * scale * channels, ncnn::Mat::PIXEL_RGB);
+#endif
                 }
                 if (channels == 4)
                 {
+#if _WIN32
+                    out.to_pixels((unsigned char*)outimage.data + yi * scale * TILE_SIZE_Y * w * scale * channels, ncnn::Mat::PIXEL_RGBA2BGRA);
+#else
                     out.to_pixels((unsigned char*)outimage.data + yi * scale * TILE_SIZE_Y * w * scale * channels, ncnn::Mat::PIXEL_RGBA);
+#endif
                 }
             }
         }
@@ -475,6 +538,7 @@ int RealSR::process_cpu(const ncnn::Mat& inimage, ncnn::Mat& outimage) const
     const unsigned char* pixeldata = (const unsigned char*)inimage.data;
     const int w = inimage.w;
     const int h = inimage.h;
+//    const int channels = inimage.elempack;
     const int channels = 3;
 
     const int TILE_SIZE_X = tilesize;
@@ -505,15 +569,21 @@ int RealSR::process_cpu(const ncnn::Mat& inimage, ncnn::Mat& outimage) const
             {
                 if (channels == 3)
                 {
+#if _WIN32
+                    in = ncnn::Mat::from_pixels_roi(pixeldata, ncnn::Mat::PIXEL_BGR2RGB, w, h, in_tile_x0, in_tile_y0, in_tile_x1 - in_tile_x0, in_tile_y1 - in_tile_y0);
+#else
                     in = ncnn::Mat::from_pixels_roi(pixeldata, ncnn::Mat::PIXEL_RGB, w, h, in_tile_x0, in_tile_y0, in_tile_x1 - in_tile_x0, in_tile_y1 - in_tile_y0);
+#endif
                 }
                 if (channels == 4)
                 {
+#if _WIN32
+                    in = ncnn::Mat::from_pixels_roi(pixeldata, ncnn::Mat::PIXEL_BGRA2RGBA, w, h, in_tile_x0, in_tile_y0, in_tile_x1 - in_tile_x0, in_tile_y1 - in_tile_y0);
+#else
                     in = ncnn::Mat::from_pixels_roi(pixeldata, ncnn::Mat::PIXEL_RGBA, w, h, in_tile_x0, in_tile_y0, in_tile_x1 - in_tile_x0, in_tile_y1 - in_tile_y0);
+#endif
                 }
             }
-            std::cout << "in.channel: " << channels << std::endl;
-
 
             ncnn::Mat out;
 
@@ -611,8 +681,10 @@ int RealSR::process_cpu(const ncnn::Mat& inimage, ncnn::Mat& outimage) const
                 {
                     ncnn::Extractor ex = net.create_extractor();
 
+//                    ex.input("data", in_tile[ti]);
                     ex.input("in0", in_tile[ti]);
 
+//                    ex.extract("output", out_tile[ti]);
                     ex.extract("out0", out_tile[ti]);
                 }
 
@@ -712,8 +784,10 @@ int RealSR::process_cpu(const ncnn::Mat& inimage, ncnn::Mat& outimage) const
                 {
                     ncnn::Extractor ex = net.create_extractor();
 
+//                    ex.input("data", in_tile);
                     ex.input("in0", in_tile);
 
+//                    ex.extract("output", out_tile);
                     ex.extract("out0", out_tile);
                 }
 
@@ -758,11 +832,19 @@ int RealSR::process_cpu(const ncnn::Mat& inimage, ncnn::Mat& outimage) const
             {
                 if (channels == 3)
                 {
+#if _WIN32
+                    out.to_pixels((unsigned char*)outimage.data + yi * scale * TILE_SIZE_Y * w * scale * channels + xi * scale * TILE_SIZE_X * channels, ncnn::Mat::PIXEL_RGB2BGR, w * scale * channels);
+#else
                     out.to_pixels((unsigned char*)outimage.data + yi * scale * TILE_SIZE_Y * w * scale * channels + xi * scale * TILE_SIZE_X * channels, ncnn::Mat::PIXEL_RGB, w * scale * channels);
+#endif
                 }
                 if (channels == 4)
                 {
+#if _WIN32
+                    out.to_pixels((unsigned char*)outimage.data + yi * scale * TILE_SIZE_Y * w * scale * channels + xi * scale * TILE_SIZE_X * channels, ncnn::Mat::PIXEL_RGBA2BGRA, w * scale * channels);
+#else
                     out.to_pixels((unsigned char*)outimage.data + yi * scale * TILE_SIZE_Y * w * scale * channels + xi * scale * TILE_SIZE_X * channels, ncnn::Mat::PIXEL_RGBA, w * scale * channels);
+#endif
                 }
             }
         }
@@ -770,3 +852,5 @@ int RealSR::process_cpu(const ncnn::Mat& inimage, ncnn::Mat& outimage) const
 
     return 0;
 }
+
+

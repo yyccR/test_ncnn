@@ -7,6 +7,7 @@
 //#alsa "yolo-nas/yolo_nas_ncnn.cpp"
 //#include "sherpa/sherpa_ncnn.cpp"
 #include "realsr/realsr_ncnn.cpp"
+//#include "real_esrgan/realesrgan_ncnn.cpp"
 
 int main() {
 //    typedef struct DetectResults {
@@ -27,6 +28,7 @@ int main() {
 //    test_yolo_nas_ncnn();
 //    test_sherpa_ncnn();
     test_realsr_ncnn();
+//    test_realesrgan_ncnn();
 
     return 0;
 }
