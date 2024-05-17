@@ -5,10 +5,10 @@
 #include <algorithm>
 #include <vector>
 
-#include "realsr_preproc.comp.hex.h"
-#include "realsr_postproc.comp.hex.h"
-#include "realsr_preproc_tta.comp.hex.h"
-#include "realsr_postproc_tta.comp.hex.h"
+//#include "realsr_preproc.comp.hex.h"
+//#include "realsr_postproc.comp.hex.h"
+//#include "realsr_preproc_tta.comp.hex.h"
+//#include "realsr_postproc_tta.comp.hex.h"
 
 RealSR::RealSR(int gpuid, bool _tta_mode, int num_threads)
 {
@@ -84,53 +84,53 @@ int RealSR::load(const std::string& parampath, const std::string& modelpath)
 #endif
 
     // initialize preprocess and postprocess pipeline
-    if (vkdev)
-    {
-        std::vector<ncnn::vk_specialization_type> specializations(1);
-#if _WIN32
-        specializations[0].i = 1;
-#else
-        specializations[0].i = 0;
-#endif
-
-        {
-            static std::vector<uint32_t> spirv;
-            static ncnn::Mutex lock;
-            {
-                ncnn::MutexLockGuard guard(lock);
-                if (spirv.empty())
-                {
-                    if (tta_mode)
-                        compile_spirv_module(realsr_preproc_tta_comp_data, sizeof(realsr_preproc_tta_comp_data), net.opt, spirv);
-                    else
-                        compile_spirv_module(realsr_preproc_comp_data, sizeof(realsr_preproc_comp_data), net.opt, spirv);
-                }
-            }
-
-            realsr_preproc = new ncnn::Pipeline(vkdev);
-            realsr_preproc->set_optimal_local_size_xyz(8, 8, 3);
-            realsr_preproc->create(spirv.data(), spirv.size() * 4, specializations);
-        }
-
-        {
-            static std::vector<uint32_t> spirv;
-            static ncnn::Mutex lock;
-            {
-                ncnn::MutexLockGuard guard(lock);
-                if (spirv.empty())
-                {
-                    if (tta_mode)
-                        compile_spirv_module(realsr_postproc_tta_comp_data, sizeof(realsr_postproc_tta_comp_data), net.opt, spirv);
-                    else
-                        compile_spirv_module(realsr_postproc_comp_data, sizeof(realsr_postproc_comp_data), net.opt, spirv);
-                }
-            }
-
-            realsr_postproc = new ncnn::Pipeline(vkdev);
-            realsr_postproc->set_optimal_local_size_xyz(8, 8, 3);
-            realsr_postproc->create(spirv.data(), spirv.size() * 4, specializations);
-        }
-    }
+//    if (vkdev)
+//    {
+//        std::vector<ncnn::vk_specialization_type> specializations(1);
+//#if _WIN32
+//        specializations[0].i = 1;
+//#else
+//        specializations[0].i = 0;
+//#endif
+//
+//        {
+//            static std::vector<uint32_t> spirv;
+//            static ncnn::Mutex lock;
+//            {
+//                ncnn::MutexLockGuard guard(lock);
+//                if (spirv.empty())
+//                {
+//                    if (tta_mode)
+//                        compile_spirv_module(realsr_preproc_tta_comp_data, sizeof(realsr_preproc_tta_comp_data), net.opt, spirv);
+//                    else
+//                        compile_spirv_module(realsr_preproc_comp_data, sizeof(realsr_preproc_comp_data), net.opt, spirv);
+//                }
+//            }
+//
+//            realsr_preproc = new ncnn::Pipeline(vkdev);
+//            realsr_preproc->set_optimal_local_size_xyz(8, 8, 3);
+//            realsr_preproc->create(spirv.data(), spirv.size() * 4, specializations);
+//        }
+//
+//        {
+//            static std::vector<uint32_t> spirv;
+//            static ncnn::Mutex lock;
+//            {
+//                ncnn::MutexLockGuard guard(lock);
+//                if (spirv.empty())
+//                {
+//                    if (tta_mode)
+//                        compile_spirv_module(realsr_postproc_tta_comp_data, sizeof(realsr_postproc_tta_comp_data), net.opt, spirv);
+//                    else
+//                        compile_spirv_module(realsr_postproc_comp_data, sizeof(realsr_postproc_comp_data), net.opt, spirv);
+//                }
+//            }
+//
+//            realsr_postproc = new ncnn::Pipeline(vkdev);
+//            realsr_postproc->set_optimal_local_size_xyz(8, 8, 3);
+//            realsr_postproc->create(spirv.data(), spirv.size() * 4, specializations);
+//        }
+//    }
 
     // bicubic 4x for alpha channel
     {
