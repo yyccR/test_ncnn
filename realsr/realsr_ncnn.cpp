@@ -13,23 +13,23 @@
 
 void test_realsr_ncnn() {
 //    std::string param = "/Users/yang/CLionProjects/test_ncnn2/realsr/df2k.ncnn.param";
-//    std::string param = "/Users/yang/CLionProjects/test_ncnn2/realsr/esrgan_anime.ncnn.param";
+    std::string param = "/Users/yang/CLionProjects/test_ncnn2/realsr/esrgan_anime.ncnn.param";
 //    std::string param = "/Users/yang/CLionProjects/test_ncnn2/realsr/dped.ncnn.param";
-    std::string param = "/Users/yang/CLionProjects/test_ncnn2/realsr/esrgan.ncnn.param";
+//    std::string param = "/Users/yang/CLionProjects/test_ncnn2/realsr/esrgan.ncnn.param";
 //    std::string bin = "/Users/yang/CLionProjects/test_ncnn2/realsr/df2k.ncnn.bin";
-//    std::string bin = "/Users/yang/CLionProjects/test_ncnn2/realsr/esrgan_anime.ncnn.bin";
+    std::string bin = "/Users/yang/CLionProjects/test_ncnn2/realsr/esrgan_anime.ncnn.bin";
 //    std::string bin = "/Users/yang/CLionProjects/test_ncnn2/realsr/dped.ncnn.bin";
-    std::string bin = "/Users/yang/CLionProjects/test_ncnn2/realsr/esrgan.ncnn.bin";
-    std::string imgFile = "/Users/yang/CLionProjects/test_ncnn2/data/cat.png";
+//    std::string bin = "/Users/yang/CLionProjects/test_ncnn2/realsr/esrgan.ncnn.bin";
+    std::string imgFile = "/Users/yang/CLionProjects/test_ncnn2/data/mxd.png";
 //    std::string outFile = "/Users/yang/CLionProjects/test_ncnn2/data/dog_sr.jpg";
 //    std::string outFile = "/Users/yang/CLionProjects/test_ncnn2/data/dog_esrgan_anime.jpg";
 //    std::string outFile = "/Users/yang/CLionProjects/test_ncnn2/data/dog_dped_sr.jpg";
-    std::string outFile = "/Users/yang/CLionProjects/test_ncnn2/data/cat_esrgan.jpg";
+    std::string outFile = "/Users/yang/CLionProjects/test_ncnn2/data/mxd_esrgan_anime.jpg";
     int num_threads = 4;
     auto realSr = new RealSR(-1, false, num_threads);
     int res = realSr->load(param, bin);
     realSr->scale = 4;
-    realSr->tilesize = 200;
+    realSr->tilesize = 400;
     realSr->prepadding = 10;
     std::cout << "load res: " << res << std::endl;
     cv::Mat image = cv::imread(imgFile, cv::IMREAD_COLOR);
