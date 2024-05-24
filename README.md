@@ -129,3 +129,35 @@ def forward(self, x):
     # return torch.cat([x, pred_kpt], 1) if self.export else (torch.cat([x[0], pred_kpt], 1), (x[1], kpt))
     # return torch.cat([x, kpt], 1) if self.export else (torch.cat([x[0], kpt], 1), (x[1], kpt))
 ```
+
+### 5. real-sr (torchScript->pnnx->ncnn)
+
+![real_sr_test.png](/data/real_sr_test.png)
+
+1. 下载 [DF2K.pth](https://drive.google.com/open?id=1pWGfSw-UxOkrtbh14GeLQgYnMLdLguOF) 和 [DPED.pth](https://drive.google.com/open?id=1zZIuQSepFlupV103AatoP-JSJpwJFS19) 模型
+2. 拷贝模型到 `pretrained_model` 目录下
+3. 修改 `/codes/options/df2k/test_df2k.yml` , `/codes/options/dped/test_dped.yml` 中 `path: pretrain_model_G` 参数.
+4. 在 `/codes/test.py` 脚本在 `model = create_model(opt)` 之后加上如下, 同级目录可看到转换后的ncnn模型文件:
+```python
+import pnnx
+x = torch.rand(1, 3, 320, 320)
+opt_model = pnnx.export(model.netG, "dped.pt", x)
+result = opt_model(x)
+```
+5. `python3 test.py -opt options/df2k/test_df2k.yml` 
+6. `python3 test.py -opt options/dped/test_dped.yml`
+
+
+### 6. real-esrgan (torchScript->pnnx->ncnn)
+
+![real_sr_test.png](/data/dog_esrgan_test.png)
+
+1. 下载 [RealESRGAN_x4plus](https://github.com/xinntao/Real-ESRGAN/releases/download/v0.1.0/RealESRGAN_x4plus.pth) 模型
+2. 拷贝模型到 `weights` 目录下
+3. 在 `/realesrgan/utils.py` 脚本在 `RealESRGANer.__init__方法最后` 加上如下, 同级目录可看到转换后的ncnn模型文件:
+```python
+x = torch.rand(1, 3, 320, 320)
+opt_model = pnnx.export(model, "../weights/esrgan.pt", x)
+result = opt_model(x)
+```
+4. `python3 inference_realesrgan.py -n RealESRGAN_x4plus -i inputs --face_enhance --fp32`
