@@ -13,18 +13,20 @@
 
 void test_realsr_ncnn() {
 //    std::string param = "/Users/yang/CLionProjects/test_ncnn2/realsr/df2k.ncnn.param";
-    std::string param = "/Users/yang/CLionProjects/test_ncnn2/realsr/esrgan_anime.ncnn.param";
+//    std::string param = "/Users/yang/CLionProjects/test_ncnn2/realsr/esrgan_anime.ncnn.param";
 //    std::string param = "/Users/yang/CLionProjects/test_ncnn2/realsr/dped.ncnn.param";
-//    std::string param = "/Users/yang/CLionProjects/test_ncnn2/realsr/esrgan.ncnn.param";
+    std::string param = "/Users/yang/CLionProjects/test_ncnn2/realsr/esrgan.ncnn.param";
 //    std::string bin = "/Users/yang/CLionProjects/test_ncnn2/realsr/df2k.ncnn.bin";
-    std::string bin = "/Users/yang/CLionProjects/test_ncnn2/realsr/esrgan_anime.ncnn.bin";
+//    std::string bin = "/Users/yang/CLionProjects/test_ncnn2/realsr/esrgan_anime.ncnn.bin";
 //    std::string bin = "/Users/yang/CLionProjects/test_ncnn2/realsr/dped.ncnn.bin";
-//    std::string bin = "/Users/yang/CLionProjects/test_ncnn2/realsr/esrgan.ncnn.bin";
-    std::string imgFile = "/Users/yang/CLionProjects/test_ncnn2/data/mxd.png";
+    std::string bin = "/Users/yang/CLionProjects/test_ncnn2/realsr/esrgan.ncnn.bin";
+    std::string imgFile = "/Users/yang/CLionProjects/test_ncnn2/data/test_sr2.jpg";
+//    std::string imgFile = "/Users/yang/CLionProjects/test_ncnn2/data/mxd.png";
 //    std::string outFile = "/Users/yang/CLionProjects/test_ncnn2/data/dog_sr.jpg";
 //    std::string outFile = "/Users/yang/CLionProjects/test_ncnn2/data/dog_esrgan_anime.jpg";
 //    std::string outFile = "/Users/yang/CLionProjects/test_ncnn2/data/dog_dped_sr.jpg";
-    std::string outFile = "/Users/yang/CLionProjects/test_ncnn2/data/mxd_esrgan_anime.jpg";
+//    std::string outFile = "/Users/yang/CLionProjects/test_ncnn2/data/mxd_esrgan_anime.jpg";
+    std::string outFile = "/Users/yang/CLionProjects/test_ncnn2/data/test_sr2_esrgan.jpg";
     int num_threads = 4;
     auto realSr = new RealSR(-1, false, num_threads);
     int res = realSr->load(param, bin);
