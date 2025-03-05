@@ -1,12 +1,12 @@
 #include <iostream>
 
-#include "yolov5-seg/yolov5_seg_ncnn.cpp"
-//#alsa "yolov8-seg/yolov8_seg_ncnn.cpp"
-//#alsa "yolov8-pose/yolov8_pose_ncnn.cpp"
-//#alsa "yolov8/yolov8_ncnn.cpp"
-//#alsa "yolo-nas/yolo_nas_ncnn.cpp"
+//#include "yolov5-seg/yolov5_seg_ncnn.cpp"
+//#include "yolov8-seg/yolov8_seg_ncnn.cpp"
+#include "yolov8-pose/yolov8_pose_ncnn.cpp"
+//#include "yolov8/yolov8_ncnn.cpp"
+//#include "yolo-nas/yolo_nas_ncnn.cpp"
 //#include "sherpa/sherpa_ncnn.cpp"
-#include "realsr/realsr_ncnn.cpp"
+//#include "realsr/realsr_ncnn.cpp"
 //#include "real_esrgan/realesrgan_ncnn.cpp"
 
 int main() {
@@ -23,11 +23,11 @@ int main() {
 //    }
 //    test_yolov5_seg_ncnn();
 //    test_yolov8_seg_ncnn();
-//    test_yolov8_pose_ncnn();
+    test_yolov8_pose_ncnn();
 //    test_yolov8_ncnn();
 //    test_yolo_nas_ncnn();
 //    test_sherpa_ncnn();
-    test_realsr_ncnn();
+//    test_realsr_ncnn();
 //    test_realesrgan_ncnn();
 
     return 0;

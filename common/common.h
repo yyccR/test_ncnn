@@ -1,7 +1,7 @@
 
 
-#ifndef TEST_NCNN2_COMMON_H
-#define TEST_NCNN2_COMMON_H
+#ifndef test_ncnn_COMMON_H
+#define test_ncnn_COMMON_H
 
 
 #pragma once
@@ -71,4 +71,4 @@ void generate_proposals(const ncnn::Mat& anchors, int stride, const ncnn::Mat& i
 void nms_sorted_bboxes(const std::vector<Object>& faceobjects, std::vector<int>& picked, float nms_threshold, bool agnostic = true);
 
 
-#endif //TEST_NCNN2_COMMON_H
+#endif //test_ncnn_COMMON_H
