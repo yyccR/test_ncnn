@@ -21,24 +21,26 @@ std::string yolov8_pose_ncnn_out1_blob;
 std::string yolov8_pose_ncnn_out2_blob;
 std::string yolov8_pose_ncnn_out3_blob;
 std::string yolov8_pose_ncnn_seg_blob;
-int target_size = 640;
+int target_size = 128;
+//int target_size = 640;
 float prob_threshold = 0.25;
 float nms_threshold  = 0.45;
-std::vector<std::string> class_names = { "person", "bicycle", "car", "motorcycle", "airplane", "bus",
-                                         "train", "truck", "boat", "traffic light", "fire hydrant",
-                                         "stop sign", "parking meter", "bench", "bird", "cat", "dog",
-                                         "horse", "sheep", "cow", "elephant", "bear", "zebra", "giraffe",
-                                         "backpack", "umbrella", "handbag", "tie", "suitcase", "frisbee",
-                                         "skis", "snowboard", "sports ball", "kite", "baseball bat",
-                                         "baseball glove", "skateboard", "surfboard", "tennis racket",
-                                         "bottle", "wine glass", "cup", "fork", "knife", "spoon", "bowl",
-                                         "banana", "apple", "sandwich", "orange", "broccoli", "carrot",
-                                         "hot dog", "pizza", "donut", "cake", "chair", "couch",
-                                         "potted plant", "bed", "dining table", "toilet", "tv", "laptop",
-                                         "mouse", "remote", "keyboard", "cell phone", "microwave", "oven",
-                                         "toaster", "sink", "refrigerator", "book", "clock", "vase",
-                                         "scissors", "teddy bear", "hair drier", "toothbrush"
-};
+std::vector<std::string> class_names = {"left","right"};
+//std::vector<std::string> class_names = { "person", "bicycle", "car", "motorcycle", "airplane", "bus",
+//                                         "train", "truck", "boat", "traffic light", "fire hydrant",
+//                                         "stop sign", "parking meter", "bench", "bird", "cat", "dog",
+//                                         "horse", "sheep", "cow", "elephant", "bear", "zebra", "giraffe",
+//                                         "backpack", "umbrella", "handbag", "tie", "suitcase", "frisbee",
+//                                         "skis", "snowboard", "sports ball", "kite", "baseball bat",
+//                                         "baseball glove", "skateboard", "surfboard", "tennis racket",
+//                                         "bottle", "wine glass", "cup", "fork", "knife", "spoon", "bowl",
+//                                         "banana", "apple", "sandwich", "orange", "broccoli", "carrot",
+//                                         "hot dog", "pizza", "donut", "cake", "chair", "couch",
+//                                         "potted plant", "bed", "dining table", "toilet", "tv", "laptop",
+//                                         "mouse", "remote", "keyboard", "cell phone", "microwave", "oven",
+//                                         "toaster", "sink", "refrigerator", "book", "clock", "vase",
+//                                         "scissors", "teddy bear", "hair drier", "toothbrush"
+//};
 
 void ncnn_clear() {
     yolov8_pose_ncnn_net.clear();
@@ -66,7 +68,8 @@ static void generate_proposals(std::vector<GridAndStride> grid_strides, const nc
     const int num_points = grid_strides.size();
     const int num_class = 1;
     const int reg_max_1 = 16;
-    const int num_key_points = 17;
+//    const int num_key_points = 17;
+    const int num_key_points = 6;
 
     for (int i = 0; i < num_points; i++)
     {
@@ -222,7 +225,7 @@ int detect(const cv::Mat& bgr, std::vector<Object>& objects) {
     ncnn::Mat in_pad;
     ncnn::copy_make_border(in, in_pad, hpad / 2, hpad - hpad / 2, wpad / 2, wpad - wpad / 2, ncnn::BORDER_CONSTANT, 114.f);
 
-    // apply yolov5 pre process, that is to normalize 0~255 to 0~1
+    // apply yolov5_v60_v61_v62_v70 pre process, that is to normalize 0~255 to 0~1
     const float norm_vals[3] = { 1 / 255.f, 1 / 255.f, 1 / 255.f };
     in_pad.substract_mean_normalize(0, norm_vals);
 
@@ -344,17 +347,17 @@ int detect(const cv::Mat& bgr, std::vector<Object>& objects) {
 //    ncnn::Mat in = ncnn::Mat::from_pixels_resize(bgr.data, ncnn::Mat::PIXEL_BGR2RGB, img_w, img_h, w, h);
 //
 //    // pad to target_size rectangle
-//    // yolov5/utils/datasets.py letterbox
+//    // yolov5_v60_v61_v62_v70/utils/datasets.py letterbox
 //    int wpad = (w + MAX_STRIDE - 1) / MAX_STRIDE * MAX_STRIDE - w;
 //    int hpad = (h + MAX_STRIDE - 1) / MAX_STRIDE * MAX_STRIDE - h;
 //    ncnn::Mat in_pad;
 //    ncnn::copy_make_border(in, in_pad, hpad / 2, hpad - hpad / 2, wpad / 2, wpad - wpad / 2, ncnn::BORDER_CONSTANT, 114.f);
 //
-//    // apply yolov5 pre process, that is to normalize 0~255 to 0~1
+//    // apply yolov5_v60_v61_v62_v70 pre process, that is to normalize 0~255 to 0~1
 //    const float norm_vals[3] = { 1 / 255.f, 1 / 255.f, 1 / 255.f };
 //    in_pad.substract_mean_normalize(0, norm_vals);
 //
-//    // yolov5 model inference
+//    // yolov5_v60_v61_v62_v70 model inference
 //    ncnn::Extractor ex = yolov8_seg_ncnn_net.create_extractor();
 //    ex.input(yolov8_seg_ncnn_in_blob.c_str(), in_pad);
 //
@@ -411,7 +414,7 @@ int detect(const cv::Mat& bgr, std::vector<Object>& objects) {
 //
 //    std::vector<Object> proposals;
 //
-//    // anchor setting from yolov5/models/yolov5s.yaml
+//    // anchor setting from yolov5_v60_v61_v62_v70/models/yolov5s.yaml
 //
 //    // stride 8
 //    {
@@ -599,9 +602,12 @@ void draw_objects(cv::Mat& bgr, const std::vector<Object>& objects, int mode) {
 
 
 void test_yolov8_pose_ncnn() {
-    std::string image_file("/Users/yang/CLionProjects/test_ncnn2/data/bus.jpeg");
-    std::string param_file("/Users/yang/CLionProjects/test_ncnn2/yolov8-pose/yolov8n-pose.ncnn.param");
-    std::string bin_file("/Users/yang/CLionProjects/test_ncnn2/yolov8-pose/yolov8n-pose.ncnn.bin");
+    std::string image_file("/Users/yang/CLionProjects/test_ncnn/data/v8-pose-hand.jpg");
+//    std::string image_file("/Users/yang/CLionProjects/test_ncnn/data/bus.jpeg");
+    std::string param_file("/Users/yang/CLionProjects/test_ncnn/yolov8-pose/yolov8n_pose_hand.ncnn.param");
+//    std::string param_file("/Users/yang/CLionProjects/test_ncnn/yolov8-pose/yolov8n-pose.ncnn.param");
+    std::string bin_file("/Users/yang/CLionProjects/test_ncnn/yolov8-pose/yolov8n_pose_hand.ncnn.bin");
+//    std::string bin_file("/Users/yang/CLionProjects/test_ncnn/yolov8-pose/yolov8n-pose.ncnn.bin");
 
     int res = load(bin_file, param_file);
     std::cout << "init res: " << res << std::endl;

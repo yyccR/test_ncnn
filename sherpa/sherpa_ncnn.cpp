@@ -6,14 +6,14 @@
 
 void test_sherpa_ncnn() {
 
-    std::string encode_param_file("/Users/yang/CLionProjects/test_ncnn2/sherpa/encoder_jit_trace-pnnx.ncnn.param");
-    std::string encode_bin_file("/Users/yang/CLionProjects/test_ncnn2/sherpa/encoder_jit_trace-pnnx.ncnn.bin");
-    std::string decode_param_file("/Users/yang/CLionProjects/test_ncnn2/sherpa/decoder_jit_trace-pnnx.ncnn.param");
-    std::string decode_bin_file("/Users/yang/CLionProjects/test_ncnn2/sherpa/decoder_jit_trace-pnnx.ncnn.bin");
-    std::string joiner_param_file("/Users/yang/CLionProjects/test_ncnn2/sherpa/joiner_jit_trace-pnnx.ncnn.param");
-    std::string joiner_bin_file("/Users/yang/CLionProjects/test_ncnn2/sherpa/joiner_jit_trace-pnnx.ncnn.bin");
-    std::string tokens_file("/Users/yang/CLionProjects/test_ncnn2/sherpa/tokens.txt");
-    std::string wav_file = "/Users/yang/CLionProjects/test_ncnn2/data/audio/test_chinese_1.wav";
+    std::string encode_param_file("/Users/yang/CLionProjects/test_ncnn/sherpa/encoder_jit_trace-pnnx.ncnn.param");
+    std::string encode_bin_file("/Users/yang/CLionProjects/test_ncnn/sherpa/encoder_jit_trace-pnnx.ncnn.bin");
+    std::string decode_param_file("/Users/yang/CLionProjects/test_ncnn/sherpa/decoder_jit_trace-pnnx.ncnn.param");
+    std::string decode_bin_file("/Users/yang/CLionProjects/test_ncnn/sherpa/decoder_jit_trace-pnnx.ncnn.bin");
+    std::string joiner_param_file("/Users/yang/CLionProjects/test_ncnn/sherpa/joiner_jit_trace-pnnx.ncnn.param");
+    std::string joiner_bin_file("/Users/yang/CLionProjects/test_ncnn/sherpa/joiner_jit_trace-pnnx.ncnn.bin");
+    std::string tokens_file("/Users/yang/CLionProjects/test_ncnn/sherpa/tokens.txt");
+    std::string wav_file = "/Users/yang/CLionProjects/test_ncnn/data/audio/test_chinese_1.wav";
 
     SherpaNcnnRecognizerConfig config;
     memset(&config, 0, sizeof(config));
