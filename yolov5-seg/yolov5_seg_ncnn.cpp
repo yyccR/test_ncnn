@@ -94,7 +94,7 @@ int detect(const cv::Mat& bgr, std::vector<Object>& objects) {
     ncnn::Mat in_pad;
     ncnn::copy_make_border(in, in_pad, hpad / 2, hpad - hpad / 2, wpad / 2, wpad - wpad / 2, ncnn::BORDER_CONSTANT, 114.f);
 
-    // apply yolov5 pre process, that is to normalize 0~255 to 0~1
+    // apply yolov5_v60_v61_v62_v70 pre process, that is to normalize 0~255 to 0~1
     const float norm_vals[3] = { 1 / 255.f, 1 / 255.f, 1 / 255.f };
     in_pad.substract_mean_normalize(0, norm_vals);
 
@@ -256,17 +256,17 @@ int detect_dynamic(const cv::Mat& bgr, std::vector<Object>& objects) {
     ncnn::Mat in = ncnn::Mat::from_pixels_resize(bgr.data, ncnn::Mat::PIXEL_BGR2RGB, img_w, img_h, w, h);
 
     // pad to target_size rectangle
-    // yolov5/utils/datasets.py letterbox
+    // yolov5_v60_v61_v62_v70/utils/datasets.py letterbox
     int wpad = (w + MAX_STRIDE - 1) / MAX_STRIDE * MAX_STRIDE - w;
     int hpad = (h + MAX_STRIDE - 1) / MAX_STRIDE * MAX_STRIDE - h;
     ncnn::Mat in_pad;
     ncnn::copy_make_border(in, in_pad, hpad / 2, hpad - hpad / 2, wpad / 2, wpad - wpad / 2, ncnn::BORDER_CONSTANT, 114.f);
 
-    // apply yolov5 pre process, that is to normalize 0~255 to 0~1
+    // apply yolov5_v60_v61_v62_v70 pre process, that is to normalize 0~255 to 0~1
     const float norm_vals[3] = { 1 / 255.f, 1 / 255.f, 1 / 255.f };
     in_pad.substract_mean_normalize(0, norm_vals);
 
-    // yolov5 model inference
+    // yolov5_v60_v61_v62_v70 model inference
     ncnn::Extractor ex = net.create_extractor();
     ex.input(in_blob.c_str(), in_pad);
 
@@ -323,7 +323,7 @@ int detect_dynamic(const cv::Mat& bgr, std::vector<Object>& objects) {
 
     std::vector<Object> proposals;
 
-    // anchor setting from yolov5/models/yolov5s.yaml
+    // anchor setting from yolov5_v60_v61_v62_v70/models/yolov5s.yaml
 
     // stride 8
     {
@@ -506,8 +506,8 @@ void draw_objects(cv::Mat& bgr, const std::vector<Object>& objects, int mode) {
 
 void test_yolov5_seg_ncnn() {
     std::string image_file("/Users/yang/CLionProjects/test_ncnn/data/bus.jpeg");
-    std::string param_file("/Users/yang/CLionProjects/test_ncnn/yolov5-seg/yolov5s-seg.ncnn.param");
-    std::string bin_file("/Users/yang/CLionProjects/test_ncnn/yolov5-seg/yolov5s-seg.ncnn.bin");
+    std::string param_file("/Users/yang/CLionProjects/test_ncnn/yolov5_v60_v61_v62_v70-seg/yolov5s-seg.ncnn.param");
+    std::string bin_file("/Users/yang/CLionProjects/test_ncnn/yolov5_v60_v61_v62_v70-seg/yolov5s-seg.ncnn.bin");
 
     int res = load(bin_file, param_file);
     std::cout << "init res: " << res << std::endl;
