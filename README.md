@@ -85,7 +85,7 @@ def forward(self, x):
 
 ![dog](/data/traffic_road_seg_v8.jpg)
 
-Detect层后处理修改如下, 直接return`x_cat`:
+方案1: Detect层后处理修改如下, 直接return`x_cat`:
 ```python
 def forward(self, x):
     """Concatenates and returns predicted bounding boxes and class probabilities."""
@@ -109,6 +109,22 @@ def forward(self, x):
     # y = torch.cat((dbox, cls.sigmoid()), 1)
     # return y if self.export else (y, x)
 ```
+
+方案二：
+```shell
+pip3 install ultralytics
+pip3 install ncnn
+yolo export model=yolov8n.pt format=ncnn half=True
+```
+
+手动指定cpp推理获取模型输出节点名, 下面217可能会因为自己模型结构不同而有所差异, 具体可参考如下图位置:
+```cpp
+yolov8_ncnn_out_blob = '217';
+ncnn::Extractor ex = yolov8_ncnn_net.create_extractor();
+ncnn::Mat out;
+ex.extract(yolov8_ncnn_out_blob.c_str(), out);
+```
+![yolov8_with_post_process_output_name](/data/yolov8_with_post_process_output_name.png)
 
 ### 4. yolov8-pose (torchScript->pnnx->ncnn)
 

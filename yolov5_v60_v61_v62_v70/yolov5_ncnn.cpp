@@ -127,8 +127,8 @@ static int detect_yolov5(const cv::Mat& bgr, std::vector<Object>& objects)
 
     yolov5.opt.use_vulkan_compute = true;
 
-    yolov5.load_param("/Users/yang/CLionProjects/test_ncnn/yolov5_v60_v61_v62_v70/yolov5s.torchscript.ncnn.param");
-    yolov5.load_model("/Users/yang/CLionProjects/test_ncnn/yolov5_v60_v61_v62_v70/yolov5s.torchscript.ncnn.bin");
+    yolov5.load_param("/Users/yang/CLionProjects/test_ncnn2/yolov5_v60_v61_v62_v70/yolov5s.torchscript.ncnn.param");
+    yolov5.load_model("/Users/yang/CLionProjects/test_ncnn2/yolov5_v60_v61_v62_v70/yolov5s.torchscript.ncnn.bin");
 
     const int target_size = 640;
     const float prob_threshold = 0.25f;
@@ -408,8 +408,10 @@ static int detect_yolov5_dynamic(const cv::Mat& bgr, std::vector<Object>& object
 
     yolov5.opt.use_vulkan_compute = true;
 
-    yolov5.load_param("/Users/yang/CLionProjects/test_ncnn/yolov5_v60_v61_v62_v70/yolov5s.torchscript.ncnn.param");
-    yolov5.load_model("/Users/yang/CLionProjects/test_ncnn/yolov5_v60_v61_v62_v70/yolov5s.torchscript.ncnn.bin");
+//    yolov5.load_param("/Users/yang/CLionProjects/test_ncnn2/yolov5_v60_v61_v62_v70/yolov5s.torchscript.ncnn.param");
+    yolov5.load_param("/Users/yang/CLionProjects/test_ncnn2/yolov5_v60_v61_v62_v70/yolov5s.dynamic.multi.out.ncnn.param");
+//    yolov5.load_model("/Users/yang/CLionProjects/test_ncnn2/yolov5_v60_v61_v62_v70/yolov5s.torchscript.ncnn.bin");
+    yolov5.load_model("/Users/yang/CLionProjects/test_ncnn2/yolov5_v60_v61_v62_v70/yolov5s.dynamic.multi.out.ncnn.bin");
 
     const int target_size = 640;
     const float prob_threshold = 0.25f;
@@ -457,9 +459,12 @@ static int detect_yolov5_dynamic(const cv::Mat& bgr, std::vector<Object>& object
     ncnn::Mat out0;
     ncnn::Mat out1;
     ncnn::Mat out2;
-    ex.extract("209", out0);
-    ex.extract("215", out1);
-    ex.extract("221", out2);
+//    ex.extract("215", out0);
+    ex.extract("out0", out0);
+//    ex.extract("233", out1);
+    ex.extract("out1", out1);
+//    ex.extract("251", out2);
+    ex.extract("out2", out2);
 
     std::vector<Object> proposals;
 
@@ -594,7 +599,7 @@ static void draw_objects(const cv::Mat& bgr, const std::vector<Object>& objects)
     }
 
 //    cv::imshow("image", image);
-    cv::imwrite("../data/yolov5_v60_v61_v62_v70.jpeg", image);
+    cv::imwrite("../data/yolov5_v60_v61_v62_v70(0).jpeg", image);
 //    cv::waitKey(0);
 }
 
@@ -626,7 +631,7 @@ static void draw_objects(const cv::Mat& bgr, const std::vector<Object>& objects)
 
 
 void test_yolov5_v60_v61_v62_v70_ncnn() {
-    std::string image_file("/Users/yang/CLionProjects/test_ncnn/data/bus.jpeg");
+    std::string image_file("/Users/yang/CLionProjects/test_ncnn2/data/bus.jpeg");
 //    std::string param_file("/Users/yang/CLionProjects/test_ncnn/yolov5_v60_v61_v62_v70/yolov5s.torchscript.ncnn.param");
 //    std::string bin_file("/Users/yang/CLionProjects/test_ncnn/yolov5_v60_v61_v62_v70/yolov5s.torchscript.ncnn.bin");
 
