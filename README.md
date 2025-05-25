@@ -23,7 +23,7 @@ unzip pnnx-20250430-linux.zip
 ./pnnx-20250430-linux/pnnx yolov5s.torchscript.pt inputshape=[1,3,640,640]
 ```
 
-### 1. yolov5-segment (torchScript->pnnx->ncnn)
+### 2. yolov5-segment (torchScript->pnnx->ncnn)
 
 ![dog](/data/traffic_road_seg.jpg)
 
@@ -52,7 +52,7 @@ def forward(self, x):
     # return y if self.export else (y, x)
 ```
 
-### 2. yolov8-detect (torchScript->pnnx->ncnn)
+### 3. yolov8-detect (torchScript->pnnx->ncnn)
 
 ![dog](/data/traffic_road_detect_v8.jpg)
 
@@ -98,7 +98,7 @@ ex.extract(yolov8_ncnn_out_blob.c_str(), out);
 ![yolov8_with_post_process_output_name](/data/yolov8_with_post_process_output_name.png)
 
 
-### 3. yolov8-segment (torchScript->pnnx->ncnn)
+### 4. yolov8-segment (torchScript->pnnx->ncnn)
 
 ![dog](/data/traffic_road_seg_v8.jpg)
 
@@ -127,7 +127,7 @@ def forward(self, x):
     # return y if self.export else (y, x)
 ```
 
-### 4. yolov8-pose (torchScript->pnnx->ncnn)
+### 5. yolov8-pose (torchScript->pnnx->ncnn)
 
 ![dog](/data/coco128_625-pose.jpg)
 
@@ -167,10 +167,10 @@ def forward(self, x):
         return x, kpt
     # pred_kpt = self.kpts_decode(bs, kpt)
     # return torch.cat([x, pred_kpt], 1) if self.export else (torch.cat([x[0], pred_kpt], 1), (x[1], kpt))
-    # return torch.cat([x, kpt], 1) if self.export else (torch.cat([x[0], kpt], 1), (x[1], kpt))
+    return torch.cat([x, kpt], 1) if self.export else (torch.cat([x[0], kpt], 1), (x[1], kpt))
 ```
 
-### 5. real-sr (torchScript->pnnx->ncnn)
+### 6. real-sr (torchScript->pnnx->ncnn)
 
 ![real_sr_test.png](/data/real_sr_test.png)
 
@@ -188,7 +188,7 @@ result = opt_model(x)
 6. `python3 test.py -opt options/dped/test_dped.yml`
 
 
-### 6. real-esrgan (torchScript->pnnx->ncnn)
+### 7. real-esrgan (torchScript->pnnx->ncnn)
 
 ![real_sr_test.png](/data/dog_esrgan_test.png)
 
