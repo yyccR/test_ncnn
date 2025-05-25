@@ -88,7 +88,7 @@ pip3 install ncnn
 yolo export model=yolov8n.pt format=ncnn half=True
 ```
 
-手动指定cpp推理获取模型输出节点名, 下面217可能会因为自己模型结构不同而有所差异, 具体可参考如下图位置:
+手动指定cpp获取模型输出节点名, 下面217可能会因为自己模型结构不同而有所差异, 具体可参考如下图位置:
 ```cpp
 yolov8_ncnn_out_blob = '217';
 ncnn::Extractor ex = yolov8_ncnn_net.create_extractor();
@@ -130,6 +130,7 @@ def forward(self, x):
 ### 5. yolov8-pose (torchScript->pnnx->ncnn)
 
 ![dog](/data/coco128_625-pose.jpg)
+方案1: 
 
 Detect层后处理修改如下, 直接return`x_cat`:
 ```python
@@ -169,6 +170,24 @@ def forward(self, x):
     # return torch.cat([x, pred_kpt], 1) if self.export else (torch.cat([x[0], pred_kpt], 1), (x[1], kpt))
     return torch.cat([x, kpt], 1) if self.export else (torch.cat([x[0], kpt], 1), (x[1], kpt))
 ```
+
+方案二：
+```shell
+pip3 install ultralytics
+pip3 install ncnn
+yolo export model=yolov8n-pose.pt format=ncnn half=True
+```
+
+手动指定cpp推理模型输出节点名, 下面217/225可能会因为自己模型结构不同而有所差异, 具体可参考如下图位置:
+```cpp
+yolov8_pose_ncnn_out_blob = '217';
+yolov8_pose_ncnn_out_blob2 = '225';
+ncnn::Extractor ex = yolov8_pose_ncnn_net.create_extractor();
+ncnn::Mat out;
+ex.extract(yolov8_pose_ncnn_out_blob.c_str(), out);
+```
+![yolov8_with_post_process_output_name](/data/yolov8_with_post_process_output_name.png)
+
 
 ### 6. real-sr (torchScript->pnnx->ncnn)
 
