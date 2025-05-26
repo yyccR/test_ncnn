@@ -87,7 +87,7 @@ const unsigned char colors[81][3] = {
         {245, 255, 0}
 };
 
-void draw_segment(cv::Mat& bgr, cv::Mat mask, const unsigned char* color) {
+void common::draw_segment(cv::Mat& bgr, cv::Mat mask, const unsigned char* color) {
     for (int y = 0; y < bgr.rows; y++) {
         uchar* image_ptr = bgr.ptr(y);
         const float* mask_ptr = mask.ptr<float>(y);
@@ -102,7 +102,7 @@ void draw_segment(cv::Mat& bgr, cv::Mat mask, const unsigned char* color) {
     }
 }
 
-void draw_pose(cv::Mat& bgr, std::vector<cv::Point3f> key_points){
+void common::draw_pose(cv::Mat& bgr, std::vector<cv::Point3f> key_points){
 
     cv::Point neck((key_points[5].x + key_points[6].x)/2.0, (key_points[5].y + key_points[6].y)/2.0);
 
@@ -170,7 +170,7 @@ void draw_pose(cv::Mat& bgr, std::vector<cv::Point3f> key_points){
     }
 }
 
-void matPrint(const ncnn::Mat& m){
+void common::matPrint(const ncnn::Mat& m){
     for (int q = 0; q < m.c; q++){
         const float* ptr = m.channel(q);
         for (int z = 0; z < m.d; z++){
@@ -187,7 +187,7 @@ void matPrint(const ncnn::Mat& m){
     }
 }
 
-void matVisualize(const char* title, const ncnn::Mat& m, bool save) {
+void common::matVisualize(const char* title, const ncnn::Mat& m, bool save) {
     std::vector<cv::Mat> normed_feats(m.c);
 
     for (int i = 0; i < m.c; i++){
@@ -239,7 +239,7 @@ void matVisualize(const char* title, const ncnn::Mat& m, bool save) {
     }
 }
 
-void transpose(const ncnn::Mat& in, ncnn::Mat& out)
+void common::transpose(const ncnn::Mat& in, ncnn::Mat& out)
 {
     ncnn::Option opt;
     ncnn::Layer* op = ncnn::create_layer("Permute");
@@ -256,7 +256,7 @@ void transpose(const ncnn::Mat& in, ncnn::Mat& out)
     delete op;
 }
 
-void softmax(ncnn::Mat& bottom) {
+void common::softmax(ncnn::Mat& bottom) {
 
     ncnn::Layer* sfm = ncnn::create_layer("Softmax");
 
@@ -278,7 +278,7 @@ void softmax(ncnn::Mat& bottom) {
 }
 
 
-void slice(const ncnn::Mat& in, ncnn::Mat& out, int start, int end, int axis) {
+void common::slice(const ncnn::Mat& in, ncnn::Mat& out, int start, int end, int axis) {
     ncnn::Option opt;
     opt.num_threads = 4;
     opt.use_fp16_storage = false;
@@ -310,7 +310,7 @@ void slice(const ncnn::Mat& in, ncnn::Mat& out, int start, int end, int axis) {
 
     delete op;
 }
-void interp(const ncnn::Mat& in, const float& scale, const int& out_w, const int& out_h, ncnn::Mat& out) {
+void common::interp(const ncnn::Mat& in, const float& scale, const int& out_w, const int& out_h, ncnn::Mat& out) {
     ncnn::Option opt;
     opt.num_threads = 4;
     opt.use_fp16_storage = false;
@@ -337,7 +337,7 @@ void interp(const ncnn::Mat& in, const float& scale, const int& out_w, const int
 
     delete op;
 }
-void reshape(const ncnn::Mat& in, ncnn::Mat& out, int c, int h, int w, int d) {
+void common::reshape(const ncnn::Mat& in, ncnn::Mat& out, int c, int h, int w, int d) {
     ncnn::Option opt;
     opt.num_threads = 4;
     opt.use_fp16_storage = false;
@@ -364,7 +364,7 @@ void reshape(const ncnn::Mat& in, ncnn::Mat& out, int c, int h, int w, int d) {
 
     delete op;
 }
-void sigmoid(ncnn::Mat& bottom) {
+void common::sigmoid(ncnn::Mat& bottom) {
     ncnn::Option opt;
     opt.num_threads = 4;
     opt.use_fp16_storage = false;
@@ -380,7 +380,7 @@ void sigmoid(ncnn::Mat& bottom) {
 
     delete op;
 }
-void matmul(const std::vector<ncnn::Mat>& bottom_blobs, ncnn::Mat& top_blob) {
+void common::matmul(const std::vector<ncnn::Mat>& bottom_blobs, ncnn::Mat& top_blob) {
     ncnn::Option opt;
     opt.num_threads = 2;
     opt.use_fp16_storage = false;
@@ -403,7 +403,7 @@ void matmul(const std::vector<ncnn::Mat>& bottom_blobs, ncnn::Mat& top_blob) {
     delete op;
 }
 
-void decode_mask(const ncnn::Mat& mask_feat, const int& img_w, const int& img_h,
+void common::decode_mask(const ncnn::Mat& mask_feat, const int& img_w, const int& img_h,
                  const ncnn::Mat& mask_proto, const ncnn::Mat& in_pad, const int& wpad, const int& hpad,
                  ncnn::Mat& mask_pred_result){
     ncnn::Mat masks;
@@ -428,12 +428,12 @@ void decode_mask(const ncnn::Mat& mask_feat, const int& img_w, const int& img_h,
     interp(mask_pred_result, 1.0, img_w, img_h, mask_pred_result);
 }
 
-inline float intersection_area(const Object& a, const Object& b) {
+inline float common::intersection_area(const Object& a, const Object& b) {
     cv::Rect_<float> inter = a.rect & b.rect;
     return inter.area();
 }
 
-void qsort_descent_inplace(std::vector<Object>& faceobjects, int left, int right) {
+void common::qsort_descent_inplace(std::vector<Object>& faceobjects, int left, int right) {
     int i = left;
     int j = right;
     float p = faceobjects[(left + right) / 2].prob;
@@ -467,14 +467,14 @@ void qsort_descent_inplace(std::vector<Object>& faceobjects, int left, int right
     }
 }
 
-void qsort_descent_inplace(std::vector<Object>& faceobjects) {
+void common::qsort_descent_inplace(std::vector<Object>& faceobjects) {
     if (faceobjects.empty())
         return;
 
-    qsort_descent_inplace(faceobjects, 0, faceobjects.size() - 1);
+    common::qsort_descent_inplace(faceobjects, 0, faceobjects.size() - 1);
 }
 
-void nms_sorted_bboxes(const std::vector<Object>& faceobjects, std::vector<int>& picked, float nms_threshold, bool agnostic) {
+void common::nms_sorted_bboxes(const std::vector<Object>& faceobjects, std::vector<int>& picked, float nms_threshold, bool agnostic) {
     picked.clear();
 
     const int n = faceobjects.size();
@@ -495,7 +495,7 @@ void nms_sorted_bboxes(const std::vector<Object>& faceobjects, std::vector<int>&
                 continue;
 
             // intersection over union
-            float inter_area = intersection_area(a, b);
+            float inter_area = common::intersection_area(a, b);
             float union_area = areas[i] + areas[picked[j]] - inter_area;
             // float IoU = inter_area / union_area
             if (inter_area / union_area > nms_threshold)
@@ -509,7 +509,7 @@ void nms_sorted_bboxes(const std::vector<Object>& faceobjects, std::vector<int>&
 
 
 
-inline float fast_exp(float x) {
+inline float common::fast_exp(float x) {
     union {
         uint32_t i;
         float f;
@@ -518,7 +518,7 @@ inline float fast_exp(float x) {
     return v.f;
 }
 
-inline float sigmoid(float x) {
+inline float common::sigmoid(float x) {
     //return static_cast<float>(1.f / (1.f + exp(-x)));
     return 1.0f / (1.0f + fast_exp(-x));
 }
@@ -605,7 +605,7 @@ void generate_proposals(const ncnn::Mat& anchors, int stride, const ncnn::Mat& i
     }
 }
 #else
-void generate_proposals(const ncnn::Mat& anchors, int stride, const ncnn::Mat& in_pad, const ncnn::Mat& feat_blob, float prob_threshold, std::vector<Object>& objects) {
+void common::generate_proposals(const ncnn::Mat& anchors, int stride, const ncnn::Mat& in_pad, const ncnn::Mat& feat_blob, float prob_threshold, std::vector<Object>& objects) {
     const int num_grid_x = feat_blob.w;
     const int num_grid_y = feat_blob.h;
 

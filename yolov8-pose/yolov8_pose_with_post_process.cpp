@@ -88,6 +88,7 @@
 #include <float.h>
 #include <stdio.h>
 #include <vector>
+#include "../common/common.h"
 
 struct KeyPoint
 {
@@ -359,8 +360,10 @@ static int detect_yolov8_pose(const cv::Mat& bgr, std::vector<Object>& objects)
     ncnn::Mat in = ncnn::Mat::from_pixels_resize(bgr.data, ncnn::Mat::PIXEL_BGR2RGB, img_w, img_h, w, h);
 
     // letterbox pad to target_size rectangle
-    int wpad = (w + max_stride - 1) / max_stride * max_stride - w;
-    int hpad = (h + max_stride - 1) / max_stride * max_stride - h;
+//    int wpad = (w + max_stride - 1) / max_stride * max_stride - w;
+//    int hpad = (h + max_stride - 1) / max_stride * max_stride - h;
+    const int wpad = target_size - w;
+    const int hpad = target_size - h;
     ncnn::Mat in_pad;
     ncnn::copy_make_border(in, in_pad, hpad / 2, hpad - hpad / 2, wpad / 2, wpad - wpad / 2, ncnn::BORDER_CONSTANT, 114.f);
 
@@ -372,13 +375,17 @@ static int detect_yolov8_pose(const cv::Mat& bgr, std::vector<Object>& objects)
     ex.input("in0", in_pad);
 
     ncnn::Mat out;
-    ex.extract("201", out);
+    ex.extract("238", out);
+    ncnn::Mat out_t;
+    common::transpose(out, out_t);
 
     ncnn::Mat out_points;
-    ex.extract("238", out_points);
+    ex.extract("201", out_points);
+    ncnn::Mat out_points_t;
+    common::transpose(out_points, out_points_t);
 
     std::vector<Object> proposals;
-    generate_proposals(out, out_points, strides, in_pad, prob_threshold, proposals);
+    generate_proposals(out_t, out_points_t, strides, in_pad, prob_threshold, proposals);
 
     // sort all proposals by score from highest to lowest
     qsort_descent_inplace(proposals);
@@ -391,7 +398,7 @@ static int detect_yolov8_pose(const cv::Mat& bgr, std::vector<Object>& objects)
     if (count == 0)
         return 0;
 
-    const int num_points = out_points.w / 3;
+    const int num_points = out_points_t.w / 3;
 
     objects.resize(count);
     for (int i = 0; i < count; i++)
