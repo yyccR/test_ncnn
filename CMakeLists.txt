@@ -3,6 +3,8 @@ project(test_ncnn)
 
 set(CMAKE_CXX_STANDARD 17)
 
+
+
 set(NCNN_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/lib/ncnn-20240410-macos-vulkan/ncnn.framework/Versions/A/Headers)
 include_directories(${NCNN_INCLUDE_DIRS})
 

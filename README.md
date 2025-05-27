@@ -178,16 +178,19 @@ pip3 install ncnn
 yolo export model=yolov8n-pose.pt format=ncnn half=True
 ```
 
-手动指定cpp推理模型输出节点名, 下面217/225可能会因为自己模型结构不同而有所差异, 具体可参考如下图位置:
+手动指定cpp推理模型输出节点名, 下面238/201可能会因为自己模型结构不同而有所差异, 具体可参考如下图位置:
 ```cpp
-yolov8_pose_ncnn_out_blob = '217';
-yolov8_pose_ncnn_out_blob2 = '225';
-ncnn::Extractor ex = yolov8_pose_ncnn_net.create_extractor();
 ncnn::Mat out;
-ex.extract(yolov8_pose_ncnn_out_blob.c_str(), out);
-```
-![yolov8_with_post_process_output_name](/data/yolov8_with_post_process_output_name.png)
+ex.extract("238", out);
+ncnn::Mat out_t;
+common::transpose(out, out_t);
 
+ncnn::Mat out_points;
+ex.extract("201", out_points);
+ncnn::Mat out_points_t;
+common::transpose(out_points, out_points_t);
+```
+![yolov8_pose_with_post_process_output_names](./data/yolov8_pose_with_post_process_output_names.png)
 
 ### 6. real-sr (torchScript->pnnx->ncnn)
 
