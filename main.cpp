@@ -2,16 +2,16 @@
 
 //#include "yolov5-seg/yolov5_seg_ncnn.cpp"
 //#include "yolov5_v60_v61_v62_v70/yolov5_ncnn.cpp"
-//#include "yolov8-seg/yolov8_seg_ncnn.cpp"
+// #include "yolov8-seg/yolov8_seg_ncnn.cpp"
 //#include "yolov8-pose/yolov8_pose_ncnn.cpp"
 //#include "yolov8-pose/yolov8_pose2_ncnn.cpp"
 //#include "yolov8/yolov8_ncnn.cpp"
-#include "yolov8-pose/yolov8_pose_with_post_process.cpp"
+// #include "yolov8-pose/yolov8_pose_with_post_process.cpp"
 //#include "yolo-nas/yolo_nas_ncnn.cpp"
 //#include "sherpa/sherpa_ncnn.cpp"
 //#include "realsr/realsr_ncnn.cpp"
 //#include "real_esrgan/realesrgan_ncnn.cpp"
-
+#include "yolov8-seg/yolov8_seg_with_post_process_ncnn.cpp"
 
 int main() {
 //    typedef struct DetectResults {
@@ -26,10 +26,11 @@ int main() {
 //        std::cout << b+i << " " << *(b+i) << std::endl;
 //    }
 //    test_yolov5_seg_ncnn();
-//    test_yolov8_seg_ncnn();
+    // test_yolov8_seg_ncnn();
+    test_yolov8_seg_with_post_process_ncnn();
 //    test_yolov8_pose_ncnn();
 //    test_yolov8_ncnn();
-    test_yolov8_pose_with_post_process_ncnn();
+    // test_yolov8_pose_with_post_process_ncnn();
 //    test_yolo_nas_ncnn();
 //    test_sherpa_ncnn();
 //    test_realsr_ncnn();

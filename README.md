@@ -130,6 +130,7 @@ def forward(self, x):
 ### 5. yolov8-pose (torchScript->pnnx->ncnn)
 
 ![dog](/data/coco128_625-pose.jpg)
+
 方案1: 
 
 Detect层后处理修改如下, 直接return`x_cat`:
