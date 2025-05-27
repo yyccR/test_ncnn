@@ -30,7 +30,7 @@ int main() {
     test_yolov8_seg_with_post_process_ncnn();
 //    test_yolov8_pose_ncnn();
 //    test_yolov8_ncnn();
-    // test_yolov8_pose_with_post_process_ncnn();
+//     test_yolov8_pose_with_post_process_ncnn();
 //    test_yolo_nas_ncnn();
 //    test_sherpa_ncnn();
 //    test_realsr_ncnn();

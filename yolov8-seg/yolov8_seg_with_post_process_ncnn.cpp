@@ -404,16 +404,16 @@ static int detect_yolov8_seg(const cv::Mat& bgr, std::vector<Object>& objects)
         return 0;
 
     ncnn::Mat mask_feat;
-    ex.extract("out1", mask_feat);
-    // ncnn::Mat mask_feat_t;
-    // common::transpose(mask_feat, mask_feat_t);
+    ex.extract("209", mask_feat);
+     ncnn::Mat mask_feat_t;
+     common::transpose(mask_feat, mask_feat_t);
 
     ncnn::Mat mask_protos;
-    ex.extract("209", mask_protos);
-    ncnn::Mat mask_protos_t;
-    common::transpose(mask_protos, mask_protos_t);
+    ex.extract("out1", mask_protos);
+//    ncnn::Mat mask_protos_t;
+//    common::transpose(mask_protos, mask_protos_t);
 
-    ncnn::Mat objects_mask_feat(mask_feat.w, 1, count);
+    ncnn::Mat objects_mask_feat(mask_feat_t.w, 1, count);
 
     objects.resize(count);
     for (int i = 0; i < count; i++)
@@ -438,7 +438,7 @@ static int detect_yolov8_seg(const cv::Mat& bgr, std::vector<Object>& objects)
         objects[i].rect.height = y1 - y0;
 
         // pick mask feat
-        memcpy(objects_mask_feat.channel(i), mask_feat.row(objects[i].gindex), mask_feat.w * sizeof(float));
+        memcpy(objects_mask_feat.channel(i), mask_feat_t.row(objects[i].gindex), mask_feat_t.w * sizeof(float));
     }
 
     // process mask
@@ -449,7 +449,7 @@ static int detect_yolov8_seg(const cv::Mat& bgr, std::vector<Object>& objects)
         ncnn::ParamDict pd;
         pd.set(6, 1);                             // constantC
         pd.set(7, count);                         // constantM
-        pd.set(8, mask_protos_t.w * mask_protos_t.h); // constantN
+        pd.set(8, mask_protos.w * mask_protos.h); // constantN
         pd.set(9, mask_feat.w);                   // constantK
         pd.set(10, -1);                           // constant_broadcast_type_C
         pd.set(11, 1);                            // output_N1M
@@ -463,10 +463,10 @@ static int detect_yolov8_seg(const cv::Mat& bgr, std::vector<Object>& objects)
 
         std::vector<ncnn::Mat> gemm_inputs(2);
         gemm_inputs[0] = objects_mask_feat;
-        gemm_inputs[1] = mask_protos_t.reshape(mask_protos_t.w * mask_protos_t.h, 1, mask_protos_t.c);
+        gemm_inputs[1] = mask_protos.reshape(mask_protos.w * mask_protos.h, 1, mask_protos.c);
         std::vector<ncnn::Mat> gemm_outputs(1);
         gemm->forward(gemm_inputs, gemm_outputs, opt);
-        objects_mask = gemm_outputs[0].reshape(mask_protos_t.w, mask_protos_t.h, count);
+        objects_mask = gemm_outputs[0].reshape(mask_protos.w, mask_protos.h, count);
 
         gemm->destroy_pipeline(opt);
 
