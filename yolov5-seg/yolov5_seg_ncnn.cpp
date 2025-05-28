@@ -65,7 +65,7 @@ void get_blob_name(std::string in, std::string out, std::string out1, std::strin
     seg_blob = seg;
 }
 
-int detect(const cv::Mat& bgr, std::vector<Object>& objects) {
+int detect(const cv::Mat& bgr, std::vector<common::Object>& objects) {
     // load image, resize and pad to 640x640
     const int img_w = bgr.cols;
     const int img_h = bgr.rows;
@@ -134,7 +134,7 @@ int detect(const cv::Mat& bgr, std::vector<Object>& objects) {
     ex.extract(seg_blob.c_str(), mask_proto);
     std::cout << mask_proto.w << " " << mask_proto.h << " " <<  mask_proto.d << " " <<  mask_proto.c << std::endl;
 
-    std::vector<Object> proposals;
+    std::vector<common::Object> proposals;
 
     const int num_grid = out.h;
     const int num_class = out.w - 5 - 32;
@@ -169,7 +169,7 @@ int detect(const cv::Mat& bgr, std::vector<Object>& objects) {
             float y1 = cy + bh * 0.5f;
 
             // collect candidates
-            Object obj;
+            common::Object obj;
             obj.rect.x = x0;
             obj.rect.y = y0;
             obj.rect.width = x1 - x0;
@@ -199,7 +199,7 @@ int detect(const cv::Mat& bgr, std::vector<Object>& objects) {
     }
 
     ncnn::Mat mask_pred_result;
-    decode_mask(mask_feat, img_w, img_h, mask_proto, in_pad, wpad, hpad, mask_pred_result);
+    common::decode_mask(mask_feat, img_w, img_h, mask_proto, in_pad, wpad, hpad, mask_pred_result);
 
 
     objects.resize(count);
@@ -232,7 +232,7 @@ int detect(const cv::Mat& bgr, std::vector<Object>& objects) {
     return 0;
 }
 
-int detect_dynamic(const cv::Mat& bgr, std::vector<Object>& objects) {
+int detect_dynamic(const cv::Mat& bgr, std::vector<common::Object>& objects) {
     // load image, resize and letterbox pad to multiple of MAX_STRIDE
     int img_w = bgr.cols;
     int img_h = bgr.rows;
@@ -321,7 +321,7 @@ int detect_dynamic(const cv::Mat& bgr, std::vector<Object>& objects) {
     ncnn::Mat mask_proto;
     ex.extract(seg_blob.c_str(), mask_proto);
 
-    std::vector<Object> proposals;
+    std::vector<common::Object> proposals;
 
     // anchor setting from yolov5_v60_v61_v62_v70/models/yolov5s.yaml
 
@@ -335,7 +335,7 @@ int detect_dynamic(const cv::Mat& bgr, std::vector<Object>& objects) {
         anchors[4] = 33.f;
         anchors[5] = 23.f;
 
-        std::vector<Object> objects;
+        std::vector<common::Object> objects;
         generate_proposals(anchors, 8, in_pad, out0, prob_threshold, objects);
 
         proposals.insert(proposals.end(), objects.begin(), objects.end());
@@ -351,7 +351,7 @@ int detect_dynamic(const cv::Mat& bgr, std::vector<Object>& objects) {
         anchors[4] = 59.f;
         anchors[5] = 119.f;
 
-        std::vector<Object> objects;
+        std::vector<common::Object> objects;
         generate_proposals(anchors, 16, in_pad, out1, prob_threshold, objects);
 
         proposals.insert(proposals.end(), objects.begin(), objects.end());
@@ -367,7 +367,7 @@ int detect_dynamic(const cv::Mat& bgr, std::vector<Object>& objects) {
         anchors[4] = 373.f;
         anchors[5] = 326.f;
 
-        std::vector<Object> objects;
+        std::vector<common::Object> objects;
         generate_proposals(anchors, 32, in_pad, out2, prob_threshold, objects);
 
         proposals.insert(proposals.end(), objects.begin(), objects.end());
@@ -389,7 +389,7 @@ int detect_dynamic(const cv::Mat& bgr, std::vector<Object>& objects) {
     }
 
     ncnn::Mat mask_pred_result;
-    decode_mask(mask_feat, img_w, img_h, mask_proto, in_pad, wpad, hpad, mask_pred_result);
+    common::decode_mask(mask_feat, img_w, img_h, mask_proto, in_pad, wpad, hpad, mask_pred_result);
 
     objects.resize(count);
     for (int i = 0; i < count; i++) {
@@ -420,21 +420,21 @@ int detect_dynamic(const cv::Mat& bgr, std::vector<Object>& objects) {
     return 0;
 }
 
-void draw_objects(cv::Mat& bgr, const std::vector<Object>& objects, int mode) {
+void draw_objects(cv::Mat& bgr, const std::vector<common::Object>& objects, int mode) {
     int color_index = 0;
 
     for (size_t i = 0; i < objects.size(); i++) {
-        const Object& obj = objects[i];
+        const common::Object& obj = objects[i];
         fprintf(stderr, "%d = %.5f at %.2f %.2f %.2f x %.2f (%s)\n", obj.label, obj.prob, obj.rect.x, obj.rect.y, obj.rect.width, obj.rect.height, class_names[obj.label].c_str());
 
         if(mode == 0)
             color_index = obj.label;
-        const unsigned char* color = colors[color_index];
+        const unsigned char* color = common::colors[color_index];
         cv::Scalar cc(color[0], color[1], color[2]);
         if(mode == 1)
             color_index++;
 
-        draw_segment(bgr, obj.cv_mask, color);
+        common::draw_segment(bgr, obj.cv_mask, color);
 
         cv::rectangle(bgr, obj.rect, cc, 1);
 
@@ -505,15 +505,15 @@ void draw_objects(cv::Mat& bgr, const std::vector<Object>& objects, int mode) {
 
 
 void test_yolov5_seg_ncnn() {
-    std::string image_file("/Users/yang/CLionProjects/test_ncnn/data/bus.jpeg");
-    std::string param_file("/Users/yang/CLionProjects/test_ncnn/yolov5_v60_v61_v62_v70-seg/yolov5s-seg.ncnn.param");
-    std::string bin_file("/Users/yang/CLionProjects/test_ncnn/yolov5_v60_v61_v62_v70-seg/yolov5s-seg.ncnn.bin");
+    std::string image_file("../data/bus.jpeg");
+    std::string param_file("../yolov5-seg/yolov5s-seg.ncnn.param");
+    std::string bin_file("../yolov5-seg/yolov5s-seg.ncnn.bin");
 
     int res = load(bin_file, param_file);
     std::cout << "init res: " << res << std::endl;
     cv::Mat image = cv::imread(image_file, 1);
     get_blob_name("in0","out0","out1","out2","out3","out1");
-    std::vector<Object> objects;
+    std::vector<common::Object> objects;
     detect(image, objects);
 //    for(auto i : objects){
 //        std::cout << i.rect.x << " " << i.rect.y << " " << class_names[i.label] << " " << i.prob << std::endl;

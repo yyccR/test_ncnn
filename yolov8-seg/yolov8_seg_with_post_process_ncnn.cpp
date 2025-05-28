@@ -286,7 +286,7 @@ static void generate_proposals(const ncnn::Mat& pred, int stride, const ncnn::Ma
                 obj.gindex = y * num_grid_x + x;
 
                 objects.push_back(obj);
-                std::cout << score << ' ' << objects.size() << std::endl;
+                // std::cout << score << ' ' << objects.size() << std::endl;
             }
         }
     }
@@ -315,7 +315,7 @@ static void generate_proposals(const ncnn::Mat& pred, const std::vector<int>& st
             // obj.gindex += pred_row_offset;
             // objects.push_back(obj);
         // }
-        std::cout << "objects: " << objects.size() << std::endl;
+        // std::cout << "objects: " << objects.size() << std::endl;
         pred_row_offset += num_grid;
     }
 }
@@ -328,8 +328,10 @@ static int detect_yolov8_seg(const cv::Mat& bgr, std::vector<Object>& objects)
     // yolov8.opt.use_bf16_storage = true;
 
     // https://github.com/nihui/ncnn-android-yolov8/tree/master/app/src/main/assets
-    yolov8.load_param("../yolov8-seg/yolov8n_seg_with_post_process.param");
-    yolov8.load_model("../yolov8-seg/yolov8n_seg_with_post_process.bin");
+    // yolov8.load_param("../yolov8-seg/yolov8n_seg_with_post_process.param");
+    yolov8.load_param("../yolov8-seg/yolov8n-seg.ncnn.param");
+    // yolov8.load_model("../yolov8-seg/yolov8n_seg_with_post_process.bin");
+    yolov8.load_model("../yolov8-seg/yolov8n-seg.ncnn.bin");
     // yolov8.load_param("yolov8s_seg.ncnn.param");
     // yolov8.load_model("yolov8s_seg.ncnn.bin");
     // yolov8.load_param("yolov8m_seg.ncnn.param");
@@ -385,7 +387,8 @@ static int detect_yolov8_seg(const cv::Mat& bgr, std::vector<Object>& objects)
     ex.input("in0", in_pad);
 
     ncnn::Mat out;
-    ex.extract("246", out);
+    // ex.extract("246", out);
+    ex.extract("240", out);
     ncnn::Mat out_t;
     common::transpose(out, out_t);
 
@@ -404,14 +407,13 @@ static int detect_yolov8_seg(const cv::Mat& bgr, std::vector<Object>& objects)
         return 0;
 
     ncnn::Mat mask_feat;
-    ex.extract("209", mask_feat);
+    // ex.extract("209", mask_feat);
+    ex.extract("244", mask_feat);
      ncnn::Mat mask_feat_t;
      common::transpose(mask_feat, mask_feat_t);
 
     ncnn::Mat mask_protos;
     ex.extract("out1", mask_protos);
-//    ncnn::Mat mask_protos_t;
-//    common::transpose(mask_protos, mask_protos_t);
 
     ncnn::Mat objects_mask_feat(mask_feat_t.w, 1, count);
 
@@ -440,6 +442,40 @@ static int detect_yolov8_seg(const cv::Mat& bgr, std::vector<Object>& objects)
         // pick mask feat
         memcpy(objects_mask_feat.channel(i), mask_feat_t.row(objects[i].gindex), mask_feat_t.w * sizeof(float));
     }
+
+    // ncnn::Mat mask_pred_result;
+    // common::decode_mask(objects_mask_feat, img_w, img_h, mask_protos, in_pad, wpad, hpad, mask_pred_result);
+    // std::cout << "mask_pred_result: " << mask_pred_result.w << " " << mask_pred_result.h << std::endl;
+    // ncnn::Mat objects_mask;
+    // objects_mask = mask_pred_result;
+
+    // objects.resize(count);
+    // for (int i = 0; i < count; i++)
+    // {
+    //     objects[i] = proposals[picked[i]];
+    //
+    //     // adjust offset to original unpadded
+    //     float x0 = (objects[i].rect.x - (wpad / 2)) / scale;
+    //     float y0 = (objects[i].rect.y - (hpad / 2)) / scale;
+    //     float x1 = (objects[i].rect.x + objects[i].rect.width - (wpad / 2)) / scale;
+    //     float y1 = (objects[i].rect.y + objects[i].rect.height - (hpad / 2)) / scale;
+    //
+    //     // clip
+    //     x0 = std::max(std::min(x0, (float)(img_w - 1)), 0.f);
+    //     y0 = std::max(std::min(y0, (float)(img_h - 1)), 0.f);
+    //     x1 = std::max(std::min(x1, (float)(img_w - 1)), 0.f);
+    //     y1 = std::max(std::min(y1, (float)(img_h - 1)), 0.f);
+    //
+    //     objects[i].rect.x = x0;
+    //     objects[i].rect.y = y0;
+    //     objects[i].rect.width = x1 - x0;
+    //     objects[i].rect.height = y1 - y0;
+    //
+    //     objects[i].mask = cv::Mat::zeros(img_h, img_w, CV_32FC1);
+    //     cv::Mat mask = cv::Mat(img_h, img_w, CV_32FC1, (float*)mask_pred_result.channel(i));
+    //     std::cout << img_h << " "  << img_w  << " " << objects[i].rect.x << " "  << objects[i].rect.y << " "  << objects[i].rect.width << " "  << objects[i].rect.height << std::endl;
+    //     mask(objects[i].rect).copyTo(objects[i].mask(objects[i].rect));
+    // }
 
     // process mask
     ncnn::Mat objects_mask;
@@ -491,6 +527,7 @@ static int detect_yolov8_seg(const cv::Mat& bgr, std::vector<Object>& objects)
     // resize mask map
     {
         ncnn::Mat objects_mask_resized;
+        // common::interp(objects_mask, 1, in_pad.w / scale, in_pad.h / scale, objects_mask_resized);
         ncnn::resize_bilinear(objects_mask, objects_mask_resized, in_pad.w / scale, in_pad.h / scale);
         objects_mask = objects_mask_resized;
     }
@@ -505,15 +542,20 @@ static int detect_yolov8_seg(const cv::Mat& bgr, std::vector<Object>& objects)
         obj.mask = cv::Mat((int)obj.rect.height, (int)obj.rect.width, CV_8UC1);
 
         // adjust offset to original unpadded and clip inside object box
+        int m = 0;
         for (int y = 0; y < (int)obj.rect.height; y++)
         {
             const float* pmm = mm.row((int)(hpad / 2 / scale + obj.rect.y + y)) + (int)(wpad / 2 / scale + obj.rect.x);
             uchar* pmask = obj.mask.ptr<uchar>(y);
             for (int x = 0; x < (int)obj.rect.width; x++)
             {
-                pmask[x] = pmm[x] > mask_threshold ? 1 : 0;
+                pmask[x] = pmm[x] > 0.5 ? 1 : 0;
+                if (pmm[x] > 0.5) m+=1;
+                // std::cout << y << " " << x << ' ' << pmm[x] << " \n";
             }
         }
+        std::cout  << i <<  " " << obj.rect.x  << " " << obj.rect.y << " " << obj.rect.width << " " << obj.rect.height  << " " << obj.rect.width* obj.rect.height << " " << m << std::endl;
+
     }
 
     return 0;
@@ -581,6 +623,7 @@ static void draw_objects(const cv::Mat& bgr, const std::vector<Object>& objects)
                 bgrptr += 3;
             }
         }
+        // common::draw_segment(image, obj.mask, common::colors[obj.label]);
 
         cv::rectangle(image, obj.rect, color);
 
