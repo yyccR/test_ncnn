@@ -11,8 +11,9 @@
 //#include "sherpa/sherpa_ncnn.cpp"
 //#include "realsr/realsr_ncnn.cpp"
 //#include "real_esrgan/realesrgan_ncnn.cpp"
-#include "yolov8_obb/yolov8_obb_with_post_process_ncnn.cpp"
+// #include "yolov8_obb/yolov8_obb_with_post_process_ncnn.cpp"
 // #include "yolov8-seg/yolov8_seg_with_post_process_ncnn.cpp"
+#include "yolov8-cls/yolov8_cls_ncnn.cpp"
 
 int main() {
 //    typedef struct DetectResults {
@@ -28,7 +29,8 @@ int main() {
 //    }
     // test_yolov5_seg_ncnn();
     // test_yolov8_seg_ncnn();
-    test_yolov8_obb_with_post_process_ncnn();
+    // test_yolov8_obb_with_post_process_ncnn();
+    test_yolov8_cls();
 //    test_yolov8_pose_ncnn();
 //    test_yolov8_ncnn();
 //     test_yolov8_pose_with_post_process_ncnn();
