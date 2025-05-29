@@ -15,6 +15,8 @@
 
 #include "../common/common.h"
 
+using namespace common;
+
 ncnn::Net yolov8_ncnn_net;
 std::string yolov8_ncnn_in_blob;
 std::string yolov8_ncnn_out_blob;
@@ -670,9 +672,9 @@ void test_yolov8_ncnn() {
     detect(image, objects);
     draw_objects(image, objects, 1);
 //
-//    cv::imshow("a", image);
-//    cv::waitKey(0);
-    cv::imwrite("../data/traffic_road_detect_withPostProcess_v8.jpg", image);
+    cv::imshow("a", image);
+    cv::waitKey(0);
+//    cv::imwrite("../data/traffic_road_detect_withPostProcess_v8.jpg", image);
 
 
 
