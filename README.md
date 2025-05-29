@@ -102,6 +102,7 @@ ex.extract(yolov8_ncnn_out_blob.c_str(), out);
 
 ![dog](/data/traffic_road_seg_v8.jpg)
 
+方案1:
 Detect层后处理修改如下, 直接return`x_cat`:
 ```python
 def forward(self, x):
@@ -126,6 +127,32 @@ def forward(self, x):
     # y = torch.cat((dbox, cls.sigmoid()), 1)
     # return y if self.export else (y, x)
 ```
+
+方案2:
+```shell
+pip3 install ultralytics
+pip3 install ncnn
+yolo export model=yolov8n-obb.pt format=ncnn half=True
+```
+
+手动指定cpp推理模型输出节点名, 下面246/200/out1可能会因为自己模型结构不同而有所差异, 具体可参考如下图位置:
+```cpp
+ncnn::Mat out;
+ex.extract("246", out);
+ncnn::Mat out_t;
+common::transpose(out, out_t);
+
+ncnn::Mat mask_feat;
+ex.extract("209", mask_feat);
+ncnn::Mat mask_feat_t;
+common::transpose(mask_feat, mask_feat_t);
+
+ncnn::Mat mask_protos;
+ex.extract("out1", mask_protos);
+```
+![yolov8_pose_with_post_process_output_names](./data/yolov8_pose_with_post_process_output_names.png)
+
+
 
 ### 5. yolov8-pose (torchScript->pnnx->ncnn)
 
