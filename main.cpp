@@ -1,6 +1,6 @@
 #include <iostream>
 
-// #include "yolov5-seg/yolov5_seg_ncnn.cpp"
+#include "yolov5-seg/yolov5_seg_ncnn.cpp"
 //#include "yolov5_v60_v61_v62_v70/yolov5_ncnn.cpp"
 // #include "yolov8-seg/yolov8_seg_ncnn.cpp"
 //#include "yolov8-pose/yolov8_pose_ncnn.cpp"

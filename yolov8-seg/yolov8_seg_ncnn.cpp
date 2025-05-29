@@ -258,7 +258,7 @@ int detect(const cv::Mat& bgr, std::vector<common::Object>& objects) {
     std::cout << "proposals: " << proposals.size() << std::endl;
 
 
-//    std::vector<Object> proposals;
+//    std::vector<common::Object> proposals;
 //    const int num_grid = out.h;
 //    const int num_class = out.w - 4 - 32;
 //    for (int i = 0; i < num_grid; i++) {
@@ -299,7 +299,7 @@ int detect(const cv::Mat& bgr, std::vector<common::Object>& objects) {
 //            float y1 = cy + bh * 0.5f;
 //
 //            // collect candidates
-//            Object obj;
+//            common::Object obj;
 //            obj.rect.x = x0;
 //            obj.rect.y = y0;
 //            obj.rect.width = x1 - x0;
@@ -365,7 +365,7 @@ int detect(const cv::Mat& bgr, std::vector<common::Object>& objects) {
     return 0;
 }
 
-//int detect_dynamic(const cv::Mat& bgr, std::vector<Object>& objects) {
+//int detect_dynamic(const cv::Mat& bgr, std::vector<common::Object>& objects) {
 //    // load image, resize and letterbox pad to multiple of MAX_STRIDE
 //    int img_w = bgr.cols;
 //    int img_h = bgr.rows;
@@ -454,7 +454,7 @@ int detect(const cv::Mat& bgr, std::vector<common::Object>& objects) {
 //    ncnn::Mat mask_proto;
 //    ex.extract(yolov8_seg_ncnn_seg_blob.c_str(), mask_proto);
 //
-//    std::vector<Object> proposals;
+//    std::vector<common::Object> proposals;
 //
 //    // anchor setting from yolov5_v60_v61_v62_v70/models/yolov5s.yaml
 //
@@ -468,7 +468,7 @@ int detect(const cv::Mat& bgr, std::vector<common::Object>& objects) {
 //        anchors[4] = 33.f;
 //        anchors[5] = 23.f;
 //
-//        std::vector<Object> objects;
+//        std::vector<common::Object> objects;
 //        generate_proposals(anchors, 8, in_pad, out0, prob_threshold, objects);
 //
 //        proposals.insert(proposals.end(), objects.begin(), objects.end());
@@ -484,7 +484,7 @@ int detect(const cv::Mat& bgr, std::vector<common::Object>& objects) {
 //        anchors[4] = 59.f;
 //        anchors[5] = 119.f;
 //
-//        std::vector<Object> objects;
+//        std::vector<common::Object> objects;
 //        generate_proposals(anchors, 16, in_pad, out1, prob_threshold, objects);
 //
 //        proposals.insert(proposals.end(), objects.begin(), objects.end());
@@ -500,7 +500,7 @@ int detect(const cv::Mat& bgr, std::vector<common::Object>& objects) {
 //        anchors[4] = 373.f;
 //        anchors[5] = 326.f;
 //
-//        std::vector<Object> objects;
+//        std::vector<common::Object> objects;
 //        generate_proposals(anchors, 32, in_pad, out2, prob_threshold, objects);
 //
 //        proposals.insert(proposals.end(), objects.begin(), objects.end());
@@ -591,7 +591,7 @@ void draw_objects(cv::Mat& bgr, const std::vector<common::Object>& objects, int 
 
 
 //void image(cv::Mat in, std::string outputPath) {
-//    std::vector<Object> objects;
+//    std::vector<common::Object> objects;
 //    if (dynamic)
 //        detect_dynamic(in, objects);
 //    else
@@ -610,10 +610,10 @@ void draw_objects(cv::Mat& bgr, const std::vector<common::Object>& objects, int 
 
 //void video(cv::VideoCapture capture) {
 //    if (capture.isOpened()) {
-//        std::cout << "Object Detection Started...." << std::endl;
+//        std::cout << "common::Object Detection Started...." << std::endl;
 //
 //        cv::Mat frame, out;
-//        std::vector<Object> objects;
+//        std::vector<common::Object> objects;
 //
 //        do {
 //            capture >> frame; //extract frame by frame
@@ -638,9 +638,9 @@ void draw_objects(cv::Mat& bgr, const std::vector<common::Object>& objects, int 
 
 
 void test_yolov8_seg_ncnn() {
-    std::string image_file("../data/traffic_road.jpg");
-    std::string param_file("../yolov8-seg/yolov8n-seg.ncnn.param");
-    std::string bin_file("../yolov8-seg/yolov8n-seg.ncnn.bin");
+    std::string image_file("/Users/yang/CLionProjects/test_ncnn/data/traffic_road.jpg");
+    std::string param_file("/Users/yang/CLionProjects/test_ncnn/yolov8-seg/yolov8n-seg.ncnn.param");
+    std::string bin_file("/Users/yang/CLionProjects/test_ncnn/yolov8-seg/yolov8n-seg.ncnn.bin");
 
     int res = load(bin_file, param_file);
     std::cout << "init res: " << res << std::endl;

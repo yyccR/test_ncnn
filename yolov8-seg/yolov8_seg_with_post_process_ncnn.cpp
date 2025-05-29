@@ -306,15 +306,15 @@ static void generate_proposals(const ncnn::Mat& pred, const std::vector<int>& st
         const int num_grid_y = h / stride;
         const int num_grid = num_grid_x * num_grid_y;
 
-        // std::vector<Object> objects_stride;
-        generate_proposals(pred.row_range(pred_row_offset, num_grid), stride, in_pad, prob_threshold, objects);
+        std::vector<Object> objects_stride;
+        generate_proposals(pred.row_range(pred_row_offset, num_grid), stride, in_pad, prob_threshold, objects_stride);
         // std::cout  << "objects_stride: " << objects_stride.size() << std::endl;
-        // for (size_t j = 0; j < objects_stride.size(); j++)
-        // {
-            // Object obj = objects_stride[j];
-            // obj.gindex += pred_row_offset;
-            // objects.push_back(obj);
-        // }
+        for (size_t j = 0; j < objects_stride.size(); j++)
+        {
+            Object obj = objects_stride[j];
+            obj.gindex += pred_row_offset;
+            objects.push_back(obj);
+        }
         // std::cout << "objects: " << objects.size() << std::endl;
         pred_row_offset += num_grid;
     }
@@ -328,10 +328,10 @@ static int detect_yolov8_seg(const cv::Mat& bgr, std::vector<Object>& objects)
     // yolov8.opt.use_bf16_storage = true;
 
     // https://github.com/nihui/ncnn-android-yolov8/tree/master/app/src/main/assets
-    // yolov8.load_param("../yolov8-seg/yolov8n_seg_with_post_process.param");
-    yolov8.load_param("../yolov8-seg/yolov8n-seg.ncnn.param");
-    // yolov8.load_model("../yolov8-seg/yolov8n_seg_with_post_process.bin");
-    yolov8.load_model("../yolov8-seg/yolov8n-seg.ncnn.bin");
+    yolov8.load_param("../yolov8-seg/yolov8n_seg_with_post_process.param");
+    // yolov8.load_param("../yolov8-seg/yolov8n-seg.ncnn.param");
+    yolov8.load_model("../yolov8-seg/yolov8n_seg_with_post_process.bin");
+    // yolov8.load_model("../yolov8-seg/yolov8n-seg.ncnn.bin");
     // yolov8.load_param("yolov8s_seg.ncnn.param");
     // yolov8.load_model("yolov8s_seg.ncnn.bin");
     // yolov8.load_param("yolov8m_seg.ncnn.param");
@@ -387,8 +387,8 @@ static int detect_yolov8_seg(const cv::Mat& bgr, std::vector<Object>& objects)
     ex.input("in0", in_pad);
 
     ncnn::Mat out;
-    // ex.extract("246", out);
-    ex.extract("240", out);
+    ex.extract("246", out);
+    // ex.extract("240", out);
     ncnn::Mat out_t;
     common::transpose(out, out_t);
 
@@ -407,8 +407,8 @@ static int detect_yolov8_seg(const cv::Mat& bgr, std::vector<Object>& objects)
         return 0;
 
     ncnn::Mat mask_feat;
-    // ex.extract("209", mask_feat);
-    ex.extract("244", mask_feat);
+    ex.extract("209", mask_feat);
+    // ex.extract("244", mask_feat);
      ncnn::Mat mask_feat_t;
      common::transpose(mask_feat, mask_feat_t);
 
@@ -443,39 +443,6 @@ static int detect_yolov8_seg(const cv::Mat& bgr, std::vector<Object>& objects)
         memcpy(objects_mask_feat.channel(i), mask_feat_t.row(objects[i].gindex), mask_feat_t.w * sizeof(float));
     }
 
-    // ncnn::Mat mask_pred_result;
-    // common::decode_mask(objects_mask_feat, img_w, img_h, mask_protos, in_pad, wpad, hpad, mask_pred_result);
-    // std::cout << "mask_pred_result: " << mask_pred_result.w << " " << mask_pred_result.h << std::endl;
-    // ncnn::Mat objects_mask;
-    // objects_mask = mask_pred_result;
-
-    // objects.resize(count);
-    // for (int i = 0; i < count; i++)
-    // {
-    //     objects[i] = proposals[picked[i]];
-    //
-    //     // adjust offset to original unpadded
-    //     float x0 = (objects[i].rect.x - (wpad / 2)) / scale;
-    //     float y0 = (objects[i].rect.y - (hpad / 2)) / scale;
-    //     float x1 = (objects[i].rect.x + objects[i].rect.width - (wpad / 2)) / scale;
-    //     float y1 = (objects[i].rect.y + objects[i].rect.height - (hpad / 2)) / scale;
-    //
-    //     // clip
-    //     x0 = std::max(std::min(x0, (float)(img_w - 1)), 0.f);
-    //     y0 = std::max(std::min(y0, (float)(img_h - 1)), 0.f);
-    //     x1 = std::max(std::min(x1, (float)(img_w - 1)), 0.f);
-    //     y1 = std::max(std::min(y1, (float)(img_h - 1)), 0.f);
-    //
-    //     objects[i].rect.x = x0;
-    //     objects[i].rect.y = y0;
-    //     objects[i].rect.width = x1 - x0;
-    //     objects[i].rect.height = y1 - y0;
-    //
-    //     objects[i].mask = cv::Mat::zeros(img_h, img_w, CV_32FC1);
-    //     cv::Mat mask = cv::Mat(img_h, img_w, CV_32FC1, (float*)mask_pred_result.channel(i));
-    //     std::cout << img_h << " "  << img_w  << " " << objects[i].rect.x << " "  << objects[i].rect.y << " "  << objects[i].rect.width << " "  << objects[i].rect.height << std::endl;
-    //     mask(objects[i].rect).copyTo(objects[i].mask(objects[i].rect));
-    // }
 
     // process mask
     ncnn::Mat objects_mask;
@@ -508,21 +475,21 @@ static int detect_yolov8_seg(const cv::Mat& bgr, std::vector<Object>& objects)
 
         delete gemm;
     }
-    {
-        ncnn::Layer* sigmoid = ncnn::create_layer("Sigmoid");
-
-        ncnn::Option opt;
-        opt.num_threads = 1;
-        opt.use_packing_layout = false;
-
-        sigmoid->create_pipeline(opt);
-
-        sigmoid->forward_inplace(objects_mask, opt);
-
-        sigmoid->destroy_pipeline(opt);
-
-        delete sigmoid;
-    }
+    // {
+    //     ncnn::Layer* sigmoid = ncnn::create_layer("Sigmoid");
+    //
+    //     ncnn::Option opt;
+    //     opt.num_threads = 1;
+    //     opt.use_packing_layout = false;
+    //
+    //     sigmoid->create_pipeline(opt);
+    //
+    //     sigmoid->forward_inplace(objects_mask, opt);
+    //
+    //     sigmoid->destroy_pipeline(opt);
+    //
+    //     delete sigmoid;
+    // }
 
     // resize mask map
     {
@@ -550,7 +517,7 @@ static int detect_yolov8_seg(const cv::Mat& bgr, std::vector<Object>& objects)
             for (int x = 0; x < (int)obj.rect.width; x++)
             {
                 pmask[x] = pmm[x] > 0.5 ? 1 : 0;
-                if (pmm[x] > 0.5) m+=1;
+                if (pmm[x] > 0) m+=1;
                 // std::cout << y << " " << x << ' ' << pmm[x] << " \n";
             }
         }
