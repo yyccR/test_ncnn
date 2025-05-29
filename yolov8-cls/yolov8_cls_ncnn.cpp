@@ -79,7 +79,7 @@ static int detect_yolov8_cls(const cv::Mat& bgr, std::vector<Object>& objects)
     // yolov8.load_model("yolov8m_cls.ncnn.bin");
 
     const int target_size = 224;
-    const int topk = 1;
+    const int topk = 5;
 
     int img_w = bgr.cols;
     int img_h = bgr.rows;
@@ -292,9 +292,10 @@ static void draw_objects(const cv::Mat& bgr, const std::vector<Object>& objects)
         cv::putText(image, text, cv::Point(x, y + label_size.height),
                     cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(0, 0, 0));
 
-        y_offset += label_size.height;
+        y_offset += label_size.height + 5;
     }
 
+    cv::imwrite("../data/yolov8_cls.jpg",image);
     cv::imshow("image", image);
     cv::waitKey(0);
 }
@@ -328,7 +329,7 @@ void test_yolov8_cls()
 {
 
 
-    std::string imagepath = "../data/cat.png";
+    std::string imagepath = "../data/dog.jpg";
 
     cv::Mat m = cv::imread(imagepath, 1);
 

@@ -1,6 +1,39 @@
 ## Test NCNN c++ in PC
 
-### 1. yolov5(v6.0,v6.1,v6.2,v7.0)(torchSrript->pnnx->ncnn)
+
+### 1. real-sr (torchScript->pnnx->ncnn)
+
+![real_sr_test.png](/data/real_sr_test.png)
+
+1. 下载 [DF2K.pth](https://drive.google.com/open?id=1pWGfSw-UxOkrtbh14GeLQgYnMLdLguOF) 和 [DPED.pth](https://drive.google.com/open?id=1zZIuQSepFlupV103AatoP-JSJpwJFS19) 模型
+2. 拷贝模型到 `pretrained_model` 目录下
+3. 修改 `/codes/options/df2k/test_df2k.yml` , `/codes/options/dped/test_dped.yml` 中 `path: pretrain_model_G` 参数.
+4. 在 `/codes/test.py` 脚本在 `model = create_model(opt)` 之后加上如下, 同级目录可看到转换后的ncnn模型文件:
+```python
+import pnnx
+x = torch.rand(1, 3, 320, 320)
+opt_model = pnnx.export(model.netG, "dped.pt", x)
+result = opt_model(x)
+```
+5. `python3 test.py -opt options/df2k/test_df2k.yml`
+6. `python3 test.py -opt options/dped/test_dped.yml`
+
+
+### 2. real-esrgan (torchScript->pnnx->ncnn)
+
+![real_sr_test.png](/data/dog_esrgan_test.png)
+
+1. 下载 [RealESRGAN_x4plus](https://github.com/xinntao/Real-ESRGAN/releases/download/v0.1.0/RealESRGAN_x4plus.pth) 模型
+2. 拷贝模型到 `weights` 目录下
+3. 在 `/realesrgan/utils.py` 脚本在 `RealESRGANer.__init__方法最后` 加上如下, 同级目录可看到转换后的ncnn模型文件:
+```python
+x = torch.rand(1, 3, 320, 320)
+opt_model = pnnx.export(model, "../weights/esrgan.pt", x)
+result = opt_model(x)
+```
+4. `python3 inference_realesrgan.py -n RealESRGAN_x4plus -i inputs --face_enhance --fp32`
+
+### 3. yolov5(v6.0,v6.1,v6.2,v7.0)(torchSrript->pnnx->ncnn)
 ![yolov5](/data/yolov5_v60_v61_v62_v70.jpeg)
 
 1. 拉取代码, 切换到对应分支, v6.0/v6.1/v6.2/v7.0
@@ -23,7 +56,7 @@ unzip pnnx-20250430-linux.zip
 ./pnnx-20250430-linux/pnnx yolov5s.torchscript.pt inputshape=[1,3,640,640]
 ```
 
-### 2. yolov5-segment (torchScript->pnnx->ncnn)
+### 4. yolov5-segment (torchScript->pnnx->ncnn)
 
 ![dog](/data/traffic_road_seg.jpg)
 
@@ -52,7 +85,7 @@ def forward(self, x):
     # return y if self.export else (y, x)
 ```
 
-### 3. yolov8-detect (torchScript->pnnx->ncnn)
+### 5. yolov8-detect (torchScript->pnnx->ncnn)
 
 ![dog](/data/traffic_road_detect_v8.jpg)
 
@@ -98,7 +131,7 @@ ex.extract(yolov8_ncnn_out_blob.c_str(), out);
 ![yolov8_with_post_process_output_name](/data/yolov8_with_post_process_output_name.png)
 
 
-### 4. yolov8-segment (torchScript->pnnx->ncnn)
+### 6. yolov8-segment (torchScript->pnnx->ncnn)
 
 ![traffic_road_seg](/data/traffic_road_seg_v8.jpg)
 
@@ -154,7 +187,7 @@ ex.extract("out1", mask_protos);
 
 
 
-### 5. yolov8-pose (torchScript->pnnx->ncnn)
+### 7. yolov8-pose (torchScript->pnnx->ncnn)
 
 ![dog](/data/coco128_625-pose.jpg)
 
@@ -221,7 +254,7 @@ common::transpose(out_points, out_points_t);
 ![yolov8_pose_with_post_process_output_names](./data/yolov8_pose_with_post_process_output_names.png)
 
 
-### 6. yolov8-obb (torchScript->pnnx->ncnn)
+### 8. yolov8-obb (torchScript->pnnx->ncnn)
 
 ![yolov8 obb](/data/yolov8_obb_detect_res.jpg)
 
@@ -247,34 +280,13 @@ common::transpose(out_angle, out_angle_t);
 ![yolov8n_obb_output_names](./data/yolov8n_obb_output_names.png)
 
 
-### 7. real-sr (torchScript->pnnx->ncnn)
+### 9. yolov8-cls (torchScript->pnnx->ncnn)
 
-![real_sr_test.png](/data/real_sr_test.png)
+![yolov8 cls](/data/yolov8_cls.jpg)
 
-1. 下载 [DF2K.pth](https://drive.google.com/open?id=1pWGfSw-UxOkrtbh14GeLQgYnMLdLguOF) 和 [DPED.pth](https://drive.google.com/open?id=1zZIuQSepFlupV103AatoP-JSJpwJFS19) 模型
-2. 拷贝模型到 `pretrained_model` 目录下
-3. 修改 `/codes/options/df2k/test_df2k.yml` , `/codes/options/dped/test_dped.yml` 中 `path: pretrain_model_G` 参数.
-4. 在 `/codes/test.py` 脚本在 `model = create_model(opt)` 之后加上如下, 同级目录可看到转换后的ncnn模型文件:
-```python
-import pnnx
-x = torch.rand(1, 3, 320, 320)
-opt_model = pnnx.export(model.netG, "dped.pt", x)
-result = opt_model(x)
+
+```shell
+pip3 install ultralytics
+pip3 install ncnn
+yolo export model=yolov8n-obb.pt format=ncnn half=True
 ```
-5. `python3 test.py -opt options/df2k/test_df2k.yml` 
-6. `python3 test.py -opt options/dped/test_dped.yml`
-
-
-### 8. real-esrgan (torchScript->pnnx->ncnn)
-
-![real_sr_test.png](/data/dog_esrgan_test.png)
-
-1. 下载 [RealESRGAN_x4plus](https://github.com/xinntao/Real-ESRGAN/releases/download/v0.1.0/RealESRGAN_x4plus.pth) 模型
-2. 拷贝模型到 `weights` 目录下
-3. 在 `/realesrgan/utils.py` 脚本在 `RealESRGANer.__init__方法最后` 加上如下, 同级目录可看到转换后的ncnn模型文件:
-```python
-x = torch.rand(1, 3, 320, 320)
-opt_model = pnnx.export(model, "../weights/esrgan.pt", x)
-result = opt_model(x)
-```
-4. `python3 inference_realesrgan.py -n RealESRGAN_x4plus -i inputs --face_enhance --fp32`
