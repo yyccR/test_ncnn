@@ -132,7 +132,7 @@ def forward(self, x):
 ```shell
 pip3 install ultralytics
 pip3 install ncnn
-yolo export model=yolov8n-obb.pt format=ncnn half=True
+yolo export model=yolov8n-seg.pt format=ncnn half=True
 ```
 
 手动指定cpp推理模型输出节点名, 下面246/200/out1可能会因为自己模型结构不同而有所差异, 具体可参考如下图位置:
@@ -220,7 +220,34 @@ common::transpose(out_points, out_points_t);
 ```
 ![yolov8_pose_with_post_process_output_names](./data/yolov8_pose_with_post_process_output_names.png)
 
-### 6. real-sr (torchScript->pnnx->ncnn)
+
+### 6. yolov8-obb (torchScript->pnnx->ncnn)
+
+![yolov8 obb](/data/yolov8_obb_detect_res.jpg)
+
+
+```shell
+pip3 install ultralytics
+pip3 install ncnn
+yolo export model=yolov8n-obb.pt format=ncnn half=True
+```
+
+手动指定cpp推理模型输出节点名, 下面244/201可能会因为自己模型结构不同而有所差异, 具体可参考如下图位置:
+```cpp
+ncnn::Mat out;
+ex.extract("244", out);
+ncnn::Mat out_t;
+common::transpose(out, out_t);
+
+ncnn::Mat out_angle;
+ex.extract("201", out_angle);
+ncnn::Mat out_angle_t;
+common::transpose(out_angle, out_angle_t);
+```
+![yolov8n_obb_output_names](./data/yolov8n_obb_output_names.png)
+
+
+### 7. real-sr (torchScript->pnnx->ncnn)
 
 ![real_sr_test.png](/data/real_sr_test.png)
 
@@ -238,7 +265,7 @@ result = opt_model(x)
 6. `python3 test.py -opt options/dped/test_dped.yml`
 
 
-### 7. real-esrgan (torchScript->pnnx->ncnn)
+### 8. real-esrgan (torchScript->pnnx->ncnn)
 
 ![real_sr_test.png](/data/dog_esrgan_test.png)
 
