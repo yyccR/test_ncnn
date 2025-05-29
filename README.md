@@ -100,7 +100,7 @@ ex.extract(yolov8_ncnn_out_blob.c_str(), out);
 
 ### 4. yolov8-segment (torchScript->pnnx->ncnn)
 
-![dog](/data/traffic_road_seg_v8.jpg)
+![traffic_road_seg](/data/traffic_road_seg_v8.jpg)
 
 方案1:
 Detect层后处理修改如下, 直接return`x_cat`:
@@ -150,7 +150,7 @@ common::transpose(mask_feat, mask_feat_t);
 ncnn::Mat mask_protos;
 ex.extract("out1", mask_protos);
 ```
-![yolov8_pose_with_post_process_output_names](./data/yolov8_pose_with_post_process_output_names.png)
+![yolov8_pose_with_post_process_output_names](./data/yolov8n-seg-output_names.png)
 
 
 
