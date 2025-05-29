@@ -294,11 +294,22 @@ yolo export model=yolov8n-obb.pt format=ncnn half=True
 
 ### 10. yolov11 (torchScript->pnnx->ncnn)
 
-![yolov11](/data/yolov11n_traffic_road.jpg)
+![yolov11](/data/yolov11n-pose.jpg)
 
 
 ```shell
 pip3 install ultralytics
 pip3 install ncnn
 yolo export model=yolo11n.pt format=ncnn half=True
+```
+
+### 11. yolov11-pose (torchScript->pnnx->ncnn)
+
+![yolov11](/data/yolov11n_traffic_road.jpg)
+
+
+```shell
+pip3 install ultralytics
+pip3 install ncnn
+yolo export model=yolo11n-pose.pt format=ncnn half=True
 ```
