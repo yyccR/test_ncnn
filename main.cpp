@@ -15,7 +15,8 @@
 // #include "yolov8-seg/yolov8_seg_with_post_process_ncnn.cpp"
 //#include "yolov8-cls/yolov8_cls_ncnn.cpp"
 //#include "yolov11/yolov11_ncn.cpp";
-#include "yolov11-pose/yolov11_pose_with_post_process.cpp";
+// #include "yolov11-pose/yolov11_pose_with_post_process.cpp";
+#include "yolov11-seg/yolov11_seg_ncnn.cpp"
 
 int main() {
 //    typedef struct DetectResults {
@@ -43,7 +44,8 @@ int main() {
 //    test_yolov8_pose2_ncnn();
 //    test_yolov5_v60_v61_v62_v70_ncnn();
 //    test_yolov11_ncnn();
-    test_yolov11_pose_with_post_process_ncnn();
+    // test_yolov11_pose_with_post_process_ncnn();
 
+    test_yolov11_seg_with_post_process_ncnn();
     return 0;
 }
