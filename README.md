@@ -317,7 +317,7 @@ yolo export model=yolo11n-pose.pt format=ncnn half=True
 ### 12. yolov11-seg (torchScript->pnnx->ncnn)
 
 
-![yolov11](/data/yolov11_seg.jp)
+![yolov11](/data/yolov11_seg.jpg)
 
 ```shell
 pip3 install ultralytics
