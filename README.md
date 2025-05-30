@@ -335,3 +335,15 @@ pip3 install ultralytics
 pip3 install ncnn
 yolo export model=yolo11n-obb.pt format=ncnn half=True
 ```
+
+
+### 14. yolov11-cls (torchScript->pnnx->ncnn)
+
+![yolov11 obb](/data/yolov11_cls.jpg)
+
+
+```shell
+pip3 install ultralytics
+pip3 install ncnn
+yolo export model=yolo11n-cls.pt format=ncnn half=True
+```
