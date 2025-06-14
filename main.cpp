@@ -19,8 +19,9 @@
 // #include "yolov11-seg/yolov11_seg_ncnn.cpp";
 // #include "yolov11-obb/yolov11_obb_ncnn.cpp";
 // #include "yolov11-cls/yolov11_cls_ncnn.cpp"
-#include "ppocrv5/ppocrv5.cpp"
-
+//#include "ppocrv5/ppocrv5.cpp"
+//#include "yolov8-worldv2/yolov8_worldv2.cpp"
+#include "yoloe/yoloe_seg_ncnn.cpp"
 
 
 
@@ -38,8 +39,11 @@ int main() {
 //        std::cout << b+i << " " << *(b+i) << std::endl;
 //    }
     // test_yolov5_seg_ncnn();
-    // test_yolov8_seg_ncnn();
-    // test_yolov8_obb_with_post_process_ncnn();
+//     test_yolov8_seg_ncnn();
+//    test_yolov8_worldv2_ncnn();
+    test_yoloe_seg_with_post_process_ncnn();
+//    test_yolov8_seg_with_post_process_ncnn();
+//     test_yolov8_obb_with_post_process_ncnn();
 //    test_yolov8_cls();
 //    test_yolov8_pose_ncnn();
 //    test_yolov8_ncnn();
@@ -56,7 +60,7 @@ int main() {
     // test_yolov11_seg_with_post_process_ncnn();
     // test_yolov11_obb_with_post_process_ncnn();
     // test_yolov11_cls();
-    test_ppocrv5_ncnn();
+//    test_ppocrv5_ncnn();
 
     return 0;
 }

@@ -342,8 +342,35 @@ yolo export model=yolo11n-obb.pt format=ncnn half=True
 ![yolov11 obb](/data/yolov11_cls.jpg)
 
 
+
 ```shell
 pip3 install ultralytics
 pip3 install ncnn
 yolo export model=yolo11n-cls.pt format=ncnn half=True
 ```
+
+
+
+### 15. yolov8-worldv2 (torchScript->pnnx->ncnn)
+
+![yolov8s_worldv2_traffic_road.jpg](/data/yolov8s_worldv2_traffic_road.jpg)
+
+```shell
+pip3 install ultralytics
+pip3 install ncnn
+yolo export model=yolov8s-worldv2.pt format=ncnn imgsz=640 half=True
+```
+
+
+### 16. yoloe (torchScript->pnnx->ncnn)
+
+![yolov8s_worldv2_traffic_road.jpg](/data/yolov8s_worldv2_traffic_road.jpg)
+
+```shell
+pip3 install ultralytics
+pip3 install ncnn
+yolo export model=yoloe-11s-seg.pt format=ncnn imgsz=640 half=True
+```
+
+
+
