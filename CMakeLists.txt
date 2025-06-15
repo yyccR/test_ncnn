@@ -3,7 +3,9 @@ project(test_ncnn)
 
 set(CMAKE_CXX_STANDARD 17)
 
-
+# Mac下libomp支持
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Xpreprocessor -fopenmp -I/opt/homebrew/opt/libomp/include")
+set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -L/opt/homebrew/opt/libomp/lib -lomp")
 
 set(NCNN_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/lib/ncnn-20240410-macos-vulkan/ncnn.framework/Versions/A/Headers)
 include_directories(${NCNN_INCLUDE_DIRS})
@@ -51,7 +53,7 @@ add_subdirectory(yolov5_v60_v61_v62_v70)
 add_subdirectory(yolov8_obb)
 add_subdirectory(ppocrv5)
 add_subdirectory(yolov8-worldv2)
-add_subdirectory(yoloe)
+add_subdirectory(byte_tracker)
 
 #aux_source_directory(sherpa/sherpa-ncnn/c-api c-api-src-list)
 #aux_source_directory(sherpa/sherpa-ncnn/csrc csrc-list)
@@ -98,10 +100,10 @@ target_link_libraries(test_ncnn ${yolov11_seg_lib})
 target_link_libraries(test_ncnn ${yolov11_obb_lib})
 target_link_libraries(test_ncnn ${yolov11_cls_lib})
 target_link_libraries(test_ncnn ${ppocrv5_lib})
+target_link_libraries(test_ncnn byte_tracker)
 
 #target_link_libraries(test_ncnn ${sherpa_lib})
 target_link_libraries(test_ncnn realsr_lib)
 target_link_libraries(test_ncnn ${yolov5_v60_v61_v62_v70_lib})
 target_link_libraries(test_ncnn ${yolov8-worldv2_lib})
-target_link_libraries(test_ncnn ${yoloe_lib})
 #target_link_libraries(test_ncnn webp)

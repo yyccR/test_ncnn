@@ -1,5 +1,3 @@
-
-
 #include "iostream"
 #include "net.h"
 #include <opencv2/core/core.hpp>
@@ -62,7 +60,7 @@ struct GridAndStride
     int stride;
 };
 
-static void generate_proposals(std::vector<GridAndStride> grid_strides, const ncnn::Mat& box_pred, const ncnn::Mat& cls_pred, float prob_threshold, std::vector<Object>& objects)
+static void generate_proposals(std::vector<GridAndStride> grid_strides, const ncnn::Mat& box_pred, const ncnn::Mat& cls_pred, float prob_threshold, std::vector<common::Object>& objects)
 {
     const int num_points = grid_strides.size();
     const int num_class = 80;
@@ -102,7 +100,7 @@ static void generate_proposals(std::vector<GridAndStride> grid_strides, const nc
 
 
 
-            Object obj;
+            common::Object obj;
             obj.rect.x = (x2 + x1) / 2;
             obj.rect.y = (y2 + y1) / 2;
             obj.rect.width = x2 - x1;
@@ -146,7 +144,7 @@ void get_blob_name(std::string in, std::string out, std::string out1, std::strin
     yolo_nas_ncnn_seg_blob = seg;
 }
 
-int detect(const cv::Mat& bgr, std::vector<Object>& objects) {
+int detect(const cv::Mat& bgr, std::vector<common::Object>& objects) {
     // load image, resize and pad to 640x640
     const int img_w = bgr.cols;
     const int img_h = bgr.rows;
@@ -201,7 +199,7 @@ int detect(const cv::Mat& bgr, std::vector<Object>& objects) {
     std::cout << "grids_and_stride: " << grid_strides.size() << std::endl;
 
 //    std::vector<Object> proposals;
-    std::vector<Object> objects8;
+    std::vector<common::Object> objects8;
     generate_proposals(grid_strides, box_out, cls_out, prob_threshold, objects8);
     std::cout << "objects8: " << objects8.size() << std::endl;
 
@@ -449,16 +447,16 @@ int detect(const cv::Mat& bgr, std::vector<Object>& objects) {
 //    return 0;
 //}
 
-void draw_objects(cv::Mat& bgr, const std::vector<Object>& objects, int mode) {
+void draw_objects(cv::Mat& bgr, const std::vector<common::Object>& objects, int mode) {
     int color_index = 0;
 
     for (size_t i = 0; i < objects.size(); i++) {
-        const Object& obj = objects[i];
+        const common::Object& obj = objects[i];
         fprintf(stderr, "%d = %.5f at %.2f %.2f %.2f x %.2f (%s)\n", obj.label, obj.prob, obj.rect.x, obj.rect.y, obj.rect.width, obj.rect.height, class_names[obj.label].c_str());
 
         if(mode == 0)
             color_index = obj.label;
-        const unsigned char* color = colors[color_index];
+        const unsigned char* color = common::colors[color_index];
         cv::Scalar cc(color[0], color[1], color[2]);
         if(mode == 1)
             color_index++;
@@ -559,7 +557,7 @@ void test_yolo_nas_ncnn() {
 //    }
 
     get_blob_name("in0","out0","out1","out2","out3","out1");
-    std::vector<Object> objects;
+    std::vector<common::Object> objects;
     detect(image, objects);
     draw_objects(image, objects, 1);
 

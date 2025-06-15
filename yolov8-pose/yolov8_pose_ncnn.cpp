@@ -1,4 +1,3 @@
-
 #include "iostream"
 #include "net.h"
 #include <opencv2/core/core.hpp>
@@ -63,7 +62,7 @@ struct GridAndStride
     int stride;
 };
 
-static void generate_proposals(std::vector<GridAndStride> grid_strides, const ncnn::Mat& pred, float prob_threshold, std::vector<Object>& objects)
+static void generate_proposals(std::vector<GridAndStride> grid_strides, const ncnn::Mat& pred, float prob_threshold, std::vector<common::Object>& objects)
 {
     const int num_points = grid_strides.size();
     const int num_class = 1;
@@ -87,11 +86,11 @@ static void generate_proposals(std::vector<GridAndStride> grid_strides, const nc
 //                score = confidence;
 //            }
 //        }
-        float box_prob = sigmoid(scores[0]);
+        float box_prob = common::sigmoid(scores[0]);
         if (box_prob >= prob_threshold)
         {
             ncnn::Mat bbox_pred(reg_max_1, 4, (void*)pred.row(i));
-            softmax(bbox_pred);
+            common::softmax(bbox_pred);
 //            {
 //                ncnn::Layer* softmax = ncnn::create_layer("Softmax");
 //
@@ -145,12 +144,12 @@ static void generate_proposals(std::vector<GridAndStride> grid_strides, const nc
                 // 拿到第i行,从第16*4+1个数字开始
                 float kp_x = (pred.row(i)[reg_max_1*4 + 1 + p*3+0] * 2 + grid_strides[i].grid0) * grid_strides[i].stride;
                 float kp_y = (pred.row(i)[reg_max_1*4 + 1 + p*3+1] * 2 + grid_strides[i].grid1) * grid_strides[i].stride;
-                float kp_conf = sigmoid(pred.row(i)[reg_max_1*4 + 1 + p*3+2]);
+                float kp_conf = common::sigmoid(pred.row(i)[reg_max_1*4 + 1 + p*3+2]);
                 std::cout << "keypoints:" << i << " " << pred.row(i)[reg_max_1*4 + 1 + p*3+0] << " " << pred.row(i)[reg_max_1*4 + 1 + p*3+1] << " " <<  kp_x << " " << kp_y << " " << grid_strides[i].stride << std::endl;
                 key_points.emplace_back(kp_x,kp_y,kp_conf);
             }
 
-            Object obj;
+            common::Object obj;
             obj.rect.x = x0;
             obj.rect.y = y0;
             obj.rect.width = x1 - x0;
@@ -195,7 +194,7 @@ void get_blob_name(std::string in, std::string out, std::string out1, std::strin
     yolov8_pose_ncnn_seg_blob = seg;
 }
 
-int detect(const cv::Mat& bgr, std::vector<Object>& objects) {
+int detect(const cv::Mat& bgr, std::vector<common::Object>& objects) {
     // load image, resize and pad to 640x640
     const int img_w = bgr.cols;
     const int img_h = bgr.rows;
@@ -251,15 +250,15 @@ int detect(const cv::Mat& bgr, std::vector<Object>& objects) {
     */
 
     ncnn::Mat t_out;
-    transpose(out, t_out);
+    common::transpose(out, t_out);
 
     std::vector<int> strides = { 8, 16, 32 };
     std::vector<GridAndStride> grid_strides;
     generate_grids_and_stride(in_pad.w, in_pad.h, strides, grid_strides);
     std::cout << "grids_and_stride: " << grid_strides.size() << std::endl;
 
-    std::vector<Object> proposals;
-    std::vector<Object> objects8;
+    std::vector<common::Object> proposals;
+    std::vector<common::Object> objects8;
     generate_proposals(grid_strides, t_out, prob_threshold, objects8);
     std::cout << "objects8: " << objects8.size() << std::endl;
 
@@ -511,16 +510,16 @@ int detect(const cv::Mat& bgr, std::vector<Object>& objects) {
 //    return 0;
 //}
 
-void draw_objects(cv::Mat& bgr, const std::vector<Object>& objects, int mode) {
+void draw_objects(cv::Mat& bgr, const std::vector<common::Object>& objects, int mode) {
     int color_index = 0;
 
     for (size_t i = 0; i < objects.size(); i++) {
-        const Object& obj = objects[i];
+        const common::Object& obj = objects[i];
         fprintf(stderr, "%d = %.5f at %.2f %.2f %.2f x %.2f (%s)\n", obj.label, obj.prob, obj.rect.x, obj.rect.y, obj.rect.width, obj.rect.height, class_names[obj.label].c_str());
 
         if(mode == 0)
             color_index = obj.label;
-        const unsigned char* color = colors[color_index];
+        const unsigned char* color = common::colors[color_index];
         cv::Scalar cc(color[0], color[1], color[2]);
         if(mode == 1)
             color_index++;
@@ -529,7 +528,7 @@ void draw_objects(cv::Mat& bgr, const std::vector<Object>& objects, int mode) {
 
 
         if(!obj.key_points.empty()){
-            draw_pose(bgr, obj.key_points);
+            common::draw_pose(bgr, obj.key_points);
         }
 
 
@@ -629,7 +628,7 @@ void test_yolov8_pose_ncnn() {
 //    }
 
     get_blob_name("in0","out0","out1","out2","out3","out1");
-    std::vector<Object> objects;
+    std::vector<common::Object> objects;
     detect(image, objects);
     draw_objects(image, objects, 1);
 
